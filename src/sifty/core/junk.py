@@ -29,6 +29,10 @@ def _local_appdata() -> Path | None:
     return _env_path("LOCALAPPDATA")
 
 
+def _roaming_appdata() -> Path | None:
+    return _env_path("APPDATA")
+
+
 def _browser_cache_roots(local: Path) -> list[Path]:
     """Cache directories across ALL profiles of the installed browsers.
 
@@ -59,6 +63,29 @@ def _browser_cache_roots(local: Path) -> list[Path]:
                 cand = profile / sub
                 if cand.is_dir():
                     roots.append(cand)
+
+    # Opera and Opera GX store their User Data under %APPDATA% (roaming), not %LOCALAPPDATA%.
+    appdata = _roaming_appdata()
+    if appdata:
+        opera_user_data = [
+            appdata / "Opera Software" / "Opera Stable",
+            appdata / "Opera Software" / "Opera GX Stable",
+        ]
+        for user_data in opera_user_data:
+            if not user_data.is_dir():
+                continue
+            try:
+                profiles = [
+                    p for p in user_data.iterdir()
+                    if p.is_dir() and (p.name == "Default" or p.name.startswith("Profile"))
+                ]
+            except OSError:
+                continue
+            for profile in profiles:
+                for sub in ("Cache", "Code Cache", "GPUCache"):
+                    cand = profile / sub
+                    if cand.is_dir():
+                        roots.append(cand)
 
     firefox_profiles = local / "Mozilla" / "Firefox" / "Profiles"
     if firefox_profiles.is_dir():
@@ -108,7 +135,7 @@ def junk_categories(config=None) -> list[JunkCategory]:
         cats.append(
             JunkCategory(
                 "browser-cache", "Browser caches",
-                "On-disk caches for every Chrome/Edge/Brave/Vivaldi profile and "
+                "On-disk caches for every Chrome/Edge/Brave/Vivaldi/Opera profile and "
                 "Firefox (never cookies, history, or passwords).",
                 _browser_cache_roots(local),
             )

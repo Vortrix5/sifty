@@ -139,7 +139,7 @@ def _report_leftovers(name: str) -> None:
     if not items:
         return
     total = sum(i.size_bytes for i in items)
-    warn(f"{len(items)} leftover item(s) found ({human_size(total)}).")
+    warn(f"{len(items):,} leftover item(s) found ({human_size(total)}).")
     console.print(f'[dim]Review and remove them with: [cyan]sifty apps leftovers "{name}"[/cyan][/dim]')
 
 
@@ -180,11 +180,11 @@ def leftovers_cmd(
     if not apply:
         console.print("[dim]Dry-run - re-run with --apply to move them to the Recycle Bin.[/dim]")
         return
-    if not confirm(f"Move {len(items)} item(s) ({human_size(total)}) to the Recycle Bin?", assume_yes=yes):
+    if not confirm(f"Move {len(items):,} item(s) ({human_size(total)}) to the Recycle Bin?", assume_yes=yes):
         warn("Cancelled.")
         return
     result = clean_leftovers(items, dry_run=False)
     history.record_clean("leftovers", name, result.bytes_freed, result.items, result.trashed)
-    success(f"Sent {result.items} item(s) ({human_size(result.bytes_freed)}) to the Recycle Bin.")
+    success(f"Sent {result.items:,} item(s) ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:
-        warn(f"{len(result.skipped)} item(s) skipped (in use or protected).")
+        warn(f"{len(result.skipped):,} item(s) skipped (in use or protected).")

@@ -84,4 +84,4 @@ def clean_cmd(
     )
     success(f"Sent {result.items:,} items ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:
-        warn(f"{len(result.skipped)} item(s) skipped (in use or protected).")
+        warn(f"{len(result.skipped):,} item(s) skipped (in use or protected).")

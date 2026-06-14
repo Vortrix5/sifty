@@ -22,7 +22,7 @@ def list_cmd() -> None:
             for e in entries
         ])
         return
-    table = Table(title=f"Startup programs ({len(entries)})")
+    table = Table(title=f"Startup programs ({len(entries):,})")
     table.add_column("Name")
     table.add_column("State")
     table.add_column("Origin", style="dim")

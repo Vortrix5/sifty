@@ -69,12 +69,12 @@ def run_cmd(
         for op in runnable:
             console.print(f"  [cyan]{op.key}[/cyan]  {op.description}")
         if skipped_admin:
-            console.print(f"\n[dim]{len(skipped_admin)} admin-only operation(s) skipped "
+            console.print(f"\n[dim]{len(skipped_admin):,} admin-only operation(s) skipped "
                           f"(relaunch with --admin to include them).[/dim]")
         console.print("\n[dim]Dry-run - re-run with --apply to execute.[/dim]")
         return
 
-    if not confirm(f"Run {len(runnable)} optimization operation(s)?", assume_yes=yes):
+    if not confirm(f"Run {len(runnable):,} optimization operation(s)?", assume_yes=yes):
         warn("Cancelled.")
         return
 
@@ -87,6 +87,6 @@ def run_cmd(
             console.print(f"[red]failed: {msg}[/red]")
 
     if skipped_admin:
-        warn(f"{len(skipped_admin)} admin-only operation(s) skipped "
+        warn(f"{len(skipped_admin):,} admin-only operation(s) skipped "
              f"(relaunch with --admin to include them).")
     success("Optimization complete.")

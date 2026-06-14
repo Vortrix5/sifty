@@ -119,6 +119,6 @@ def duplicates_cmd(
         each = disk._entry_size(paths[0])
         wasted = each * (len(paths) - 1)
         reclaimable += wasted
-        table.add_row(str(len(paths)), human_size(each), human_size(wasted), str(paths[0]))
+        table.add_row(f"{len(paths):,}", human_size(each), human_size(wasted), str(paths[0]))
     console.print(table)
     console.print(f"\n[bold]Reclaimable by de-duplicating: {human_size(reclaimable)}[/bold]")

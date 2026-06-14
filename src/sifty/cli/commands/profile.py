@@ -45,7 +45,7 @@ def add_cmd(
         error(f"Unknown categories: {', '.join(unknown)}. Valid: {', '.join(sorted(valid))}")
         raise typer.Exit(1)
     profiles.save(Profile(name, category))
-    success(f"Saved profile '{name}' ({len(category)} categories).")
+    success(f"Saved profile '{name}' ({len(category):,} categories).")
 
 
 @app.command("remove")

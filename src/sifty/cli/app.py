@@ -335,7 +335,7 @@ def checkup_cmd() -> None:
     console.print(table)
     issues = sum(1 for f in findings if f.severity != "ok")
     if issues:
-        console.print(f"[bold]{issues}[/bold] item(s) worth a look - checkup never changes anything itself.")
+        console.print(f"[bold]{issues:,}[/bold] item(s) worth a look - checkup never changes anything itself.")
     else:
         success("All clear - nothing needs attention.")
 

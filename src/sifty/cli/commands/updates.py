@@ -38,7 +38,7 @@ def check_cmd() -> None:
         success("Everything is up to date.")
         return
 
-    table = Table(title=f"Available updates ({len(upgrades)})")
+    table = Table(title=f"Available updates ({len(upgrades):,})")
     table.add_column("Name")
     table.add_column("Id", style="dim")
     table.add_column("Current", justify="right")

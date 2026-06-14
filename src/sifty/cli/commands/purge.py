@@ -45,7 +45,7 @@ def scan_cmd(
         table.add_row(a.pattern, human_size(a.size_bytes), str(a.path))
         total += a.size_bytes
     table.add_section()
-    table.add_row("", f"[bold]{human_size(total)}[/bold]", f"[dim]{len(artifacts)} directories[/dim]")
+    table.add_row("", f"[bold]{human_size(total)}[/bold]", f"[dim]{len(artifacts):,} directories[/dim]")
     console.print(table)
     console.print("\nRun [cyan]sifty purge clean PATH --apply[/cyan] to remove them.")
 
@@ -71,7 +71,7 @@ def clean_cmd(
 
     total = sum(a.size_bytes for a in artifacts)
     console.print(
-        f"Found [bold]{len(artifacts)}[/bold] artifact directories "
+        f"Found [bold]{len(artifacts):,}[/bold] artifact directories "
         f"totalling [bold]{human_size(total)}[/bold]."
     )
     if not apply:
@@ -79,7 +79,7 @@ def clean_cmd(
         return
 
     if not confirm(
-        f"Move {len(artifacts)} artifact directories ({human_size(total)}) to the Recycle Bin?",
+        f"Move {len(artifacts):,} artifact directories ({human_size(total)}) to the Recycle Bin?",
         assume_yes=yes,
     ):
         warn("Cancelled.")
@@ -87,9 +87,9 @@ def clean_cmd(
 
     result = purge.purge_artifacts([a.path for a in artifacts], dry_run=False)
     history.record_clean("purge", str(path), result.bytes_freed, result.items, result.trashed)
-    success(f"Sent {result.items} directories ({human_size(result.bytes_freed)}) to the Recycle Bin.")
+    success(f"Sent {result.items:,} directories ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:
-        warn(f"{len(result.skipped)} skipped (in use or protected).")
+        warn(f"{len(result.skipped):,} skipped (in use or protected).")
 
 
 class _null:

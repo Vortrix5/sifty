@@ -37,7 +37,7 @@ def list_cmd(
         ])
         return
 
-    table = Table(title=f"Installed apps ({len(items)})")
+    table = Table(title=f"Installed apps ({len(items):,})")
     table.add_column("Name")
     table.add_column("Version", style="dim")
     table.add_column("Publisher", style="dim")
@@ -57,7 +57,7 @@ def startup_cmd() -> None:
             for e in entries
         ])
         return
-    table = Table(title=f"Startup programs ({len(entries)})")
+    table = Table(title=f"Startup programs ({len(entries):,})")
     table.add_column("Name")
     table.add_column("Origin", style="dim")
     table.add_column("Command")
@@ -86,7 +86,7 @@ def orphans_cmd() -> None:
         success("No orphaned uninstall entries found.")
         return
 
-    table = Table(title=f"Orphaned uninstall entries ({len(entries)})")
+    table = Table(title=f"Orphaned uninstall entries ({len(entries):,})")
     table.add_column("Application")
     table.add_column("Reason", style="dim")
     table.add_column("Key (hive)", style="dim")
@@ -94,7 +94,7 @@ def orphans_cmd() -> None:
         table.add_row(e.display_name, e.reason, e.hive)
     console.print(table)
     console.print(
-        f"\n[dim]{len(entries)} entry/entries with broken uninstallers. "
+        f"\n[dim]{len(entries):,} entry/entries with broken uninstallers. "
         "These can be removed manually via regedit or a registry cleaner.[/dim]"
     )
 

@@ -138,3 +138,94 @@ def test_discord_cache_category_covers_flavors_and_safeguards_session(monkeypatc
 
     # Verification 3: Crucial session paths are ignored
     assert not any("Local Storage" in r for r in roots)
+
+
+# ── installer-name matching helpers ────────────────────────────────────────
+
+
+class TestInstallerAppHint:
+    """Tests for ``_installer_app_hint()`` suffix stripping and normalisation."""
+
+    def test_strips_common_setup_suffixes(self):
+        # _INSTALLER_SUFFIXES strips the trailing version first (1.2.3),
+        # leaving "Discord-Setup".  The "Setup" suffix is also in the regex
+        # but the regex applies once from the end, so it strips "-1.2.3"
+        # and leaves "discord setup" after normalisation.
+        hint = junk._installer_app_hint(Path("Discord-Setup-1.2.3.exe"))
+        assert hint == "discord setup"
+
+    def test_strips_installer_suffix(self):
+        hint = junk._installer_app_hint(Path("VSCode-installer.exe"))
+        assert hint == "vscode"
+
+    def test_strips_install_suffix(self):
+        hint = junk._installer_app_hint(Path("Firefox Installer.exe"))
+        assert hint == "firefox"
+        hint = junk._installer_app_hint(Path("Firefox-Install.exe"))
+        assert hint == "firefox"
+
+    def test_strips_arch_suffixes(self):
+        hint = junk._installer_app_hint(Path("MyApp_x64.exe"))
+        assert hint == "myapp"
+        hint = junk._installer_app_hint(Path("MyApp_amd64.exe"))
+        assert hint == "myapp"
+
+    def test_strips_version_suffix(self):
+        hint = junk._installer_app_hint(Path("App-2.1.0.exe"))
+        assert hint == "app"
+
+    def test_lowercases_output(self):
+        hint = junk._installer_app_hint(Path("DIScord.EXE"))
+        assert hint == "discord"
+
+    def test_replaces_hyphens_and_underscores_with_space(self):
+        # "_windows" is a recognised suffix and gets stripped first.
+        # After stripping and normalisation: "visual studio code"
+        hint = junk._installer_app_hint(Path("Visual-Studio-Code_windows.exe"))
+        assert hint == "visual studio code"
+
+
+class TestIsInstalledAppInstaller:
+    """Tests for ``_is_installed_app_installer()`` matching logic."""
+
+    @pytest.mark.parametrize("filename,installed,expected", [
+        # happy path — exact and substring matches
+        ("Discord-Setup-1.2.3.exe", frozenset({"discord"}), True),
+        # substring match
+        ("vscode-installer.exe", frozenset({"vscode", "discord"}), True),
+        ("Firefox Setup 120.0.exe", frozenset({"firefox"}), True),
+        # short hint guard (< 3 chars)
+        ("ab-setup.exe", frozenset({"ab"}), False),
+        ("x_64.exe", frozenset({"x"}), False),
+        # no match
+        ("unknown-app-setup.exe", frozenset({"discord", "vscode"}), False),
+        ("random.exe", frozenset({"discord"}), False),
+    ])
+    def test_is_installed_app_installer(self, filename, installed, expected):
+        path = Path(filename)
+        assert junk._is_installed_app_installer(path, installed) == expected
+
+    def test_bidirectional_substring_match(self):
+        """Both 'hint in name' and 'name in hint' directions are checked."""
+        # hint "discord" is found inside "discordptb" → match
+        assert junk._is_installed_app_installer(
+            Path("Discord-Setup.exe"), frozenset({"discordptb"})
+        ) == True
+        # "discordptb" contains "discord" → match (other direction)
+        assert junk._is_installed_app_installer(
+            Path("Discord-PTB-Setup.exe"), frozenset({"discord"})
+        ) == True
+
+    def test_short_hint_after_suffix_stripping_returns_false(self):
+        """After stripping everything, a too-short hint is rejected."""
+        # "a" after stripping version → length 1, rejected
+        hint = junk._installer_app_hint(Path("a-1.0.exe"))
+        assert len(hint) < 3
+        assert junk._is_installed_app_installer(
+            Path("a-1.0.exe"), frozenset({"a"})
+        ) == False
+
+    def test_empty_installed_names_returns_false(self):
+        assert junk._is_installed_app_installer(
+            Path("Firefox-Setup.exe"), frozenset()
+        ) == False

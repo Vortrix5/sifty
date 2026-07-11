@@ -182,6 +182,10 @@ sifty ai autonomy low_risk_auto        # how much the agent does before asking
 sifty ai policy set clean_junk auto    # per-tool: auto / ask / never
 sifty ai policy list                   # see every tool and what it will do
 
+# Proactive agent: checkup + anomaly scan, toast a summary
+sifty agent run                        # notify only (never deletes)
+sifty agent schedule --sc DAILY --time 09:00   # run it in the background
+
 # Scripting: JSON output on read-only commands (auto-enabled when piped)
 sifty --json checkup
 sifty --json disk volumes

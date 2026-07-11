@@ -66,3 +66,9 @@ def test_schedule_remove(temp_appdata, monkeypatch):
 def test_sifty_command_runs_clean_profile():
     cmd = schedule.sifty_command("weekly")
     assert "-m sifty clean --profile" in cmd and "--apply --yes" in cmd
+
+
+def test_agent_command_is_background_and_not_apply():
+    cmd = schedule.agent_command()
+    assert "-m sifty agent run --background" in cmd
+    assert "--apply" not in cmd  # the scheduled task is never forced to delete

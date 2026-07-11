@@ -384,6 +384,8 @@ async def test_home_run_checkup_button(monkeypatch):
     monkeypatch.setattr(
         "sifty.core.checkup.run_checkup", lambda: [Finding("disk", "Disk", "ok", "ok", "", "")]
     )
+    monkeypatch.setattr("sifty.core.anomaly.detect", lambda **k: [])
+    monkeypatch.setattr("sifty.core.anomaly.record_snapshot", lambda **k: None)
     async with _make_app().run_test() as pilot:
         await pilot.pause()
         await pilot.click("#run-checkup")

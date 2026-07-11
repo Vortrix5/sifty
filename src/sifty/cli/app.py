@@ -15,6 +15,7 @@ from ..infra.logging import get_logger, log_file, setup_logging
 from ..windows.admin import is_admin, relaunch_as_admin
 from . import output
 from .commands import (
+    agent,
     ai_group,
     apps,
     cleanup,
@@ -53,6 +54,7 @@ app.add_typer(updates.app, name="update")
 app.add_typer(organize.app, name="organize")
 app.add_typer(watch.app, name="watch")
 app.add_typer(ai_group.app, name="ai")
+app.add_typer(agent.app, name="agent")
 app.add_typer(config_cmd.app, name="config")
 
 

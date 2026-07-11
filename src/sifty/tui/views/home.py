@@ -12,14 +12,18 @@ from __future__ import annotations
 
 import logging
 
+from rich.markdown import Markdown
 from rich.text import Text
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Static
 
+from ...ai import advisor
+from ...ai.client import OllamaClient
 from ...console import human_size
-from ...core import checkup, cleanup, disk, history, junk, updates
+from ...core import anomaly, checkup, cleanup, disk, history, junk, updates
+from ...core.anomaly import Anomaly
 from ...core.checkup import Finding
 from ...windows.admin import is_admin
 from ..modals import ConfirmModal
@@ -61,17 +65,24 @@ class HomeView(BaseView):
             )
             with Horizontal(classes="actions"):
                 yield Button("Run checkup", id="run-checkup", variant="primary")
+            yield Static("", id="ai-summary", classes="subtle")
             yield Vertical(id="checkup-results")
         yield Panel(Static("Reading volumes…", id="vol-body"), title="Volumes")
 
     def on_mount(self) -> None:
         self._findings: dict[str, Finding] = {}
+        self.query_one("#ai-summary", Static).display = False  # shown only when the AI summarizes
         self._render_volumes()  # fast (psutil), no worker needed
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
+        nav_key = getattr(event.button, "_nav_key", None)
+        if nav_key:  # an anomaly "Review…" button - jump to the owning screen
+            await self.app.show(nav_key)
+            return
         bid = event.button.id or ""
         if bid == "run-checkup":
             event.button.disabled = True
+            self._set_ai_summary(None)
             results = self.query_one("#checkup-results", Vertical)
             await results.remove_children()
             await results.mount(Static("[dim]Running checkup…[/dim]", classes="subtle"))
@@ -93,9 +104,17 @@ class HomeView(BaseView):
         except Exception:
             logger.exception("Home: checkup failed")
             findings = []
-        self.app.call_from_thread(self._show_findings, findings)
+        try:
+            anomalies = anomaly.detect()
+            anomaly.record_snapshot()  # keep the baseline fresh from interactive use
+        except Exception:
+            logger.exception("Home: anomaly detection failed")
+            anomalies = []
+        self.app.call_from_thread(self._show_findings, findings, anomalies)
 
-    async def _show_findings(self, findings: list[Finding]) -> None:
+    async def _show_findings(self, findings: list[Finding],
+                             anomalies: list[Anomaly] | None = None) -> None:
+        anomalies = anomalies or []
         try:
             self.query_one("#run-checkup", Button).disabled = False
             results = self.query_one("#checkup-results", Vertical)
@@ -116,10 +135,46 @@ class HomeView(BaseView):
             if f.severity != "ok" and f.action_key:
                 label = _DIRECT_FIX_LABELS.get(f.domain, f.action_label or "Review…")
                 await row.mount(Button(label, id=f"fix-{f.domain}", classes="fix"))
-        issues = sum(1 for f in findings if f.severity != "ok")
+        for i, a in enumerate(anomalies):
+            dot = _SEVERITY_DOT.get(a.severity, "")
+            row = Horizontal(classes="finding-row", id=f"anomaly-{i}")
+            await results.mount(row)
+            await row.mount(Static(f"{dot} [b]Change noticed[/b] - {a.summary}", classes="finding-text"))
+            if a.action_key:  # deep-link to the owning screen; selection is never an action
+                btn = Button("Review…", classes="fix")
+                btn._nav_key = a.action_key
+                await row.mount(btn)
+        issues = sum(1 for f in findings if f.severity != "ok") + len(anomalies)
         verdict = (f"[b]{issues}[/b] item(s) worth a look." if issues
                    else "[green]All clear - nothing needs attention.[/green]")
         await results.mount(Static(verdict, classes="status"))
+        # Only ping the local model when there's something to summarize.
+        if issues:
+            self.run_ai_summary_worker(findings, anomalies)
+
+    # -------------------------------------------------------------- AI summary
+    @work(thread=True, exclusive=True, group="home-aisummary")
+    def run_ai_summary_worker(self, findings: list[Finding], anomalies: list[Anomaly]) -> None:
+        try:
+            client = OllamaClient.from_config()
+            summary = advisor.summarize_checkup(client, findings, anomalies) \
+                if client.is_available() else None
+        except Exception:
+            logger.exception("Home: AI summary failed")
+            summary = None
+        self.app.call_from_thread(self._set_ai_summary, summary)
+
+    def _set_ai_summary(self, summary: str | None) -> None:
+        try:
+            banner = self.query_one("#ai-summary", Static)
+        except Exception:
+            return
+        if summary:
+            banner.update(Markdown(summary))
+            banner.display = True
+        else:
+            banner.update("")
+            banner.display = False
 
     # -------------------------------------------------------------- direct fix
     @work

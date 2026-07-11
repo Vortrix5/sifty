@@ -106,6 +106,22 @@ learned preferences. `core/ai_memory.py` (a separate `ai_memory.db`, kept out of
 `history.db` undo ledger) persists the chat transcript and the tool skips those
 preferences are derived from.
 
+## Proactive agent
+
+`core/agent_run.py` is what a scheduled `sifty agent run` executes: a read-only
+`checkup` + `anomaly.detect()`, then a toast summarizing what it found. It may also
+auto-clean, but only under strict rails - this is the one place Sifty can delete
+with no human present. The auto-fix set is a **hardcoded allowlist** of per-user
+cache/temp categories (config can only narrow it), every admin/system category is
+excluded, and the LLM is never asked what to delete here - the background path calls
+`junk.clean()` directly and records the run so `sifty undo` still works. It is off by
+default (`[agent].auto_fix`): the scheduled run only notifies unless you opt in.
+
+`core/anomaly.py` keeps a small time-series baseline (`snapshots.db`, separate from
+`history.db` and `ai_memory.db`) of disk-free, junk totals, and startup names, and
+flags notable change - a fast free-space drop, junk growth, a new startup entry. Its
+findings feed the toast, the AI context, and the Home checkup.
+
 ## Testing strategy
 
 - `pyproject.toml` sets `pythonpath = ["src"]` so tests import `sifty` without an

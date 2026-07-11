@@ -4,6 +4,29 @@ All notable changes to Sifty. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com); versions before the first
 public release were development milestones.
 
+## [0.9.0] - 2026-07
+
+### Added
+
+- **Proactive maintenance agent**: `sifty agent run` does a full read-only
+  checkup plus anomaly detection and toasts a short summary. Schedule it with
+  `sifty agent schedule` to have Sifty keep an eye on things in the background.
+- **Anomaly detection**: Sifty now notices change over time - a drive that lost
+  a lot of free space, junk piling up fast, or a new program added to Windows
+  startup - and surfaces it in the checkup, the Home screen, and the AI's
+  context. Baselines are stored locally (sizes and startup names only).
+- **Opt-in unattended auto-fix**: with `[agent].auto_fix` turned on, the
+  scheduled run may auto-clean a small, fixed allowlist of per-user cache/temp
+  junk (never system or admin locations, never your files), all to the Recycle
+  Bin and undoable from Reports. Off by default: it only notifies.
+- **AI summary on Home**: when the local model is available, the Home checkup
+  shows a short plain-language read on what matters most and what to do first.
+
+### Changed
+
+- The Home checkup now lists notable changes as their own reviewable rows, each
+  linking to the screen where you can act on them.
+
 ## [0.8.0] - 2026-07
 
 ### Added

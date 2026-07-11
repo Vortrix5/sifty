@@ -49,6 +49,29 @@ DEFAULTS: dict[str, Any] = {
         # Free-space threshold (GB) below which `sifty watch check` warns/toasts.
         "threshold_gb": 5,
     },
+    "agent": {
+        # Whether the background `sifty agent run` may DELETE unattended. Off by
+        # default - it only notifies. Turn on to auto-clean low-risk junk.
+        "auto_fix": False,
+        # Junk categories the unattended run may clean when auto_fix is on. This
+        # can only NARROW the hardcoded cache/temp allowlist in core/agent_run.py,
+        # never widen it, and admin-only categories are always excluded.
+        "auto_fix_categories": [
+            "user-temp", "thumbnail-cache", "browser-cache",
+            "winget-cache", "onedrive-logs", "discord-cache", "crash-dumps",
+        ],
+        # Don't auto-clean unless at least this many bytes are reclaimable
+        # (default 500 MB); below it, just notify.
+        "auto_fix_min_bytes": 524288000,
+    },
+    "anomaly": {
+        # Flag a volume that lost at least this much free space since last check.
+        "disk_drop_gb": 10,
+        # Flag junk that grew by at least this much since last check.
+        "junk_growth_gb": 5,
+        # Flag programs newly added to Windows startup.
+        "flag_new_startup": True,
+    },
     "purge": {
         # Extra artifact directory names beyond the built-in ARTIFACT_DIRS set.
         "extra_patterns": [],

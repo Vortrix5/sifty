@@ -42,7 +42,7 @@ body:
     attributes:
       label: Sifty version
       description: Output of `sifty version`.
-      placeholder: 0.8.0
+      placeholder: 0.9.0
     validations:
       required: true
   - type: textarea

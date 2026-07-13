@@ -22,7 +22,7 @@ from textual.widgets import Button, Static
 from ...ai import advisor
 from ...ai.client import OllamaClient
 from ...console import human_size
-from ...core import anomaly, checkup, cleanup, disk, history, junk, updates
+from ...core import agent_run, anomaly, checkup, cleanup, disk, history, junk, updates
 from ...core.anomaly import Anomaly
 from ...core.checkup import Finding
 from ...windows.admin import is_admin
@@ -65,6 +65,7 @@ class HomeView(BaseView):
             )
             with Horizontal(classes="actions"):
                 yield Button("Run checkup", id="run-checkup", variant="primary")
+                yield Button("Run agent", id="run-agent")
             yield Static("", id="ai-summary", classes="subtle")
             yield Vertical(id="checkup-results")
         yield Panel(Static("Reading volumes…", id="vol-body"), title="Volumes")
@@ -81,12 +82,14 @@ class HomeView(BaseView):
             return
         bid = event.button.id or ""
         if bid == "run-checkup":
-            event.button.disabled = True
+            self._set_buttons(False)
             self._set_ai_summary(None)
             results = self.query_one("#checkup-results", Vertical)
             await results.remove_children()
             await results.mount(Static("[dim]Running checkup…[/dim]", classes="subtle"))
             self.run_checkup_worker()
+        elif bid == "run-agent":
+            self._run_agent_flow()
         elif bid.startswith("fix-"):
             domain = bid.removeprefix("fix-")
             if domain in _DIRECT_FIX_LABELS:
@@ -112,11 +115,71 @@ class HomeView(BaseView):
             anomalies = []
         self.app.call_from_thread(self._show_findings, findings, anomalies)
 
+    def _set_buttons(self, enabled: bool) -> None:
+        for bid in ("run-checkup", "run-agent"):
+            try:
+                self.query_one(f"#{bid}", Button).disabled = not enabled
+            except Exception:
+                pass
+
+    # ------------------------------------------------------------ proactive run
+    @work
+    async def _run_agent_flow(self) -> None:
+        ok = await self.app.push_screen_wait(ConfirmModal(
+            "Run a maintenance pass? Sifty checks everything and cleans low-risk "
+            "cache/temp junk to the Recycle Bin (undoable from Reports).",
+            confirm_label="Run",
+        ))
+        if not ok:
+            return
+        self._set_buttons(False)
+        self._set_ai_summary(None)
+        results = self.query_one("#checkup-results", Vertical)
+        await results.remove_children()
+        await results.mount(Static("[dim]Running maintenance agent…[/dim]", classes="subtle"))
+        self.run_agent_worker()
+
+    @work(thread=True, exclusive=True, group="home-checkup")
+    def run_agent_worker(self) -> None:
+        try:
+            # Suppress the toast: the result is shown right here on screen.
+            result = agent_run.run_agent(apply=True, notify_fn=lambda _t, _m: True)
+        except Exception:
+            logger.exception("Home: agent run failed")
+            result = None
+        self.app.call_from_thread(self._show_agent_result, result)
+
+    async def _show_agent_result(self, result) -> None:
+        self._set_buttons(True)
+        if result is None:
+            try:
+                results = self.query_one("#checkup-results", Vertical)
+                await results.remove_children()
+                await results.mount(Static("Agent run failed - see `sifty logs`.", classes="subtle"))
+            except Exception:
+                pass
+            return
+        await self._show_findings(result.findings, result.anomalies)
+        try:
+            results = self.query_one("#checkup-results", Vertical)
+        except Exception:
+            return
+        if result.auto_fixed:
+            a = result.auto_fixed
+            await results.mount(Static(
+                f"[green]✓[/green] Auto-cleaned {a.items:,} items "
+                f"({human_size(a.bytes_freed)}) to the Recycle Bin · undo from Reports",
+                classes="status"))
+        if result.elevated_skipped:
+            await results.mount(Static(
+                f"[dim]{len(result.elevated_skipped)} admin-only categor(y/ies) left alone; "
+                f"use Elevate (F2) to include them.[/dim]", classes="status"))
+
     async def _show_findings(self, findings: list[Finding],
                              anomalies: list[Anomaly] | None = None) -> None:
         anomalies = anomalies or []
+        self._set_buttons(True)
         try:
-            self.query_one("#run-checkup", Button).disabled = False
             results = self.query_one("#checkup-results", Vertical)
         except Exception:
             return  # view was navigated away mid-scan

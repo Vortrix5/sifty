@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from textual.widgets import Button, DataTable, Input, Select, SelectionList, Static, Tree
 
 from sifty.core.apps import InstalledApp
@@ -39,6 +40,13 @@ from sifty.tui.views import (
 
 def _make_app() -> SiftyApp:
     return SiftyApp(start_workers=False)
+
+
+@pytest.fixture(autouse=True)
+def _isolate_appdata(monkeypatch, tmp_path):
+    # Keep TUI tests off the real %APPDATA% (ai_memory.db conversation history,
+    # snapshots, etc.) so stored state can't leak into or pollute a test.
+    monkeypatch.setenv("APPDATA", str(tmp_path))
 
 
 def test_command_palette_entries_cover_sections_and_admin():

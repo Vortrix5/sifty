@@ -394,6 +394,34 @@ async def test_home_run_checkup_button(monkeypatch):
         assert pilot.app.query(".finding-row")
 
 
+async def test_home_run_agent_button(monkeypatch):
+    from sifty.core.agent_run import AgentRunResult, AutoFixOutcome
+    from sifty.core.checkup import Finding
+
+    captured = {}
+
+    def fake_run_agent(**kw):
+        captured.update(kw)
+        return AgentRunResult(
+            [Finding("junk", "Junk files", "cleaned", "ok", "junk", "")],
+            [], AutoFixOutcome(["user-temp"], 5, 1000, [], 9), False, "done", [],
+        )
+
+    monkeypatch.setattr("sifty.core.agent_run.run_agent", fake_run_agent)
+    async with _make_app().run_test() as pilot:
+        await pilot.pause()
+        await pilot.click("#run-agent")
+        await pilot.pause()
+        await pilot.pause()
+        assert isinstance(pilot.app.screen, ConfirmModal)
+        await pilot.click("#confirm")
+        await pilot.pause()
+        await pilot.pause()
+        await pilot.pause()
+        assert captured.get("apply") is True     # the button opts into auto-fix
+        assert pilot.app.query(".finding-row")   # result rendered on Home
+
+
 async def test_home_fix_junk_confirmed(monkeypatch):
     from sifty.core.checkup import Finding
 

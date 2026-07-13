@@ -21,6 +21,9 @@ public release were development milestones.
   Bin and undoable from Reports. Off by default: it only notifies.
 - **AI summary on Home**: when the local model is available, the Home checkup
   shows a short plain-language read on what matters most and what to do first.
+- **Run agent from Home**: a "Run agent" button runs the whole proactive pass
+  and cleans the low-risk allowlist to the Recycle Bin behind a confirm, showing
+  the checkup, any anomalies, and what it cleaned right there.
 
 ### Changed
 

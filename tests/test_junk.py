@@ -138,6 +138,31 @@ def test_discord_cache_category_covers_flavors_and_safeguards_session(monkeypatc
 
     # Verification 3: Crucial session paths are ignored
     assert not any("Local Storage" in r for r in roots)
+    def test_spotify_cache_category_covers_cache_dirs_and_safeguards_session(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    spotify = local / "Spotify"
+
+    (spotify / "Storage").mkdir(parents=True)
+    (spotify / "Data").mkdir(parents=True)
+    (spotify / "Local Storage").mkdir(parents=True)
+
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    cats = {c.key: c for c in junk.junk_categories(Config())}
+
+    # Verification 1: Category exists
+    assert "spotify-cache" in cats
+
+    roots = {str(r) for r in cats["spotify-cache"].roots}
+
+    # Verification 2: Spotify cache directories are included
+    assert str(spotify / "Storage") in roots
+    assert str(spotify / "Data") in roots
+
+    # Verification 3: Login/session data is ignored
+    assert str(spotify / "Local Storage") not in roots
 
 
 def test_installer_app_hint_strips_suffixes():

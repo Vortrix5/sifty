@@ -138,6 +138,10 @@ def test_discord_cache_category_covers_flavors_and_safeguards_session(monkeypatc
 
     # Verification 3: Crucial session paths are ignored
     assert not any("Local Storage" in r for r in roots)
+
+
+
+    
     def test_spotify_cache_category_covers_cache_dirs_and_safeguards_session(monkeypatch, tmp_path):
     local = tmp_path / "local"
     spotify = local / "Spotify"

@@ -97,6 +97,28 @@ def _discord_cache_roots() -> list[Path]:
 
     return roots
 
+def _vscode_cache_roots() -> list[Path]:
+    """Cache directories for VS Code (stable channel).
+
+    Only returns the Chromium/V8 cache subfolders - never ``User``, which
+    holds settings, keybindings, and extensions.
+    """
+    roots: list[Path] = []
+    appdata = _env_path("APPDATA")
+    if not appdata:
+        return roots
+
+    code_dir = appdata / "Code"
+    if not code_dir.is_dir():
+        return roots
+
+    for sub in ("Cache", "CachedData", "Code Cache", "GPUCache"):
+        cand = code_dir / sub
+        if cand.is_dir():
+            roots.append(cand)
+
+    return roots
+
 def junk_categories(config=None) -> list[JunkCategory]:
     """Build the list of junk categories from the environment + config."""
     config = config or load_config()
@@ -224,6 +246,18 @@ def junk_categories(config=None) -> list[JunkCategory]:
                 "discord-cache", "Discord cache",
                 "On-disk caches for Discord, PTB, and Canary channels (never login session data).",
                 discord_roots,
+            )
+        )
+
+    # VS Code cache (Chromium/V8 style, safe to clear)
+    vscode_roots = _vscode_cache_roots()
+    if vscode_roots:
+        cats.append(
+            JunkCategory(
+                "vscode-cache", "VS Code cache",
+                "On-disk caches for VS Code (never the User folder - settings, "
+                "keybindings, and extensions).",
+                vscode_roots,
             )
         )
 

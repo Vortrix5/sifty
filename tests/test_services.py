@@ -34,3 +34,29 @@ def test_list_services_maps_state(monkeypatch):
     items = {s.name: s for s in services.list_services()}
     assert items["DiagTrack"].start_type == "disabled" and items["DiagTrack"].present
     assert items["Fax"].start_type == "absent" and items["Fax"].present is False
+
+
+def test_is_present_reflects_installed_state(monkeypatch):
+    monkeypatch.setattr(services_api, "get_start_type",
+                        lambda n: "manual" if n == "Fax" else None)
+    assert services.is_present("Fax") is True
+    assert services.is_present("NotInstalled") is False
+
+
+def test_missing_service_is_logged_as_absent_not_admin_failure(monkeypatch, caplog):
+    """Issue #37's log noise: error 1060 means absent, not 'admin required'."""
+    class _Win32Error(Exception):
+        winerror = services_api.ERROR_SERVICE_DOES_NOT_EXIST
+
+    class _FakeWin32Service:
+        SC_MANAGER_CONNECT = SERVICE_CHANGE_CONFIG = SERVICE_NO_CHANGE = 0
+
+        @staticmethod
+        def OpenSCManager(*a):
+            raise _Win32Error("service does not exist")
+
+    monkeypatch.setattr(services_api, "win32service", _FakeWin32Service)
+    with caplog.at_level("DEBUG", logger="sifty.windows"):
+        assert services_api.set_start_type("Fax", "disabled") is False
+    assert "not installed" in caplog.text
+    assert "admin required" not in caplog.text

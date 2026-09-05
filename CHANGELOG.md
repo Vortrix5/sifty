@@ -30,6 +30,16 @@ public release were development milestones.
 - The Home checkup now lists notable changes as their own reviewable rows, each
   linking to the screen where you can act on them.
 
+### Fixed
+
+- **`sifty update check` no longer invents an extra update.** winget prints a
+  "N upgrades available." line under its table, and when that line was wider
+  than the Name column it was parsed as another app. Rows now have to line up
+  with the table's columns. Thanks to @crankycupcake for the report (#37).
+- Optional services that aren't installed on the machine are reported as
+  absent instead of failing with a misleading "needs administrator rights",
+  and they no longer write a traceback to the diagnostics log.
+
 ## [0.8.0] - 2026-07
 
 ### Added

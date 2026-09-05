@@ -228,6 +228,7 @@ def doctor_cmd() -> None:
     import winreg
 
     import psutil
+    import platform
 
     from ..ai.client import OllamaClient
     from ..infra.config import audit_log_path
@@ -237,6 +238,8 @@ def doctor_cmd() -> None:
     has_winget = winget.available()
     client = OllamaClient.from_config()
     ollama_up = client.is_available()
+    py_version = platform.python_version()
+    win_version = platform.version()
 
     # Free space on the system volume.
     sys_root = os.environ.get("SystemDrive", "C:") + "\\"
@@ -276,6 +279,8 @@ def doctor_cmd() -> None:
 
     if output.json_enabled():
         output.emit({
+            "python_version": py_version,
+            "windows_version": win_version,
             "administrator": admin,
             "winget": has_winget,
             "disk_free_gb": round(disk_free_gb, 2),
@@ -291,6 +296,8 @@ def doctor_cmd() -> None:
     def _ok(v: bool) -> str:
         return "[green]yes[/green]" if v else "[red]no[/red]"
 
+    console.print(f"Python Version:   {py_version}")
+    console.print(f"Windows Version:  {win_version}")
     console.print(f"Administrator:    {'[green]yes[/green]' if admin else '[yellow]no[/yellow] (some tasks need it)'}")
     console.print(f"winget:           {'[green]available[/green]' if has_winget else '[red]missing[/red]'}")
 

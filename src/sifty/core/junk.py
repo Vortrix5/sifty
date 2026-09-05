@@ -226,6 +226,21 @@ def junk_categories(config=None) -> list[JunkCategory]:
                 discord_roots,
             )
         )
+            # Spotify caches (safe to clear)
+    if local:
+        spotify_roots = [
+            local / "Spotify" / "Storage",
+            local / "Spotify" / "Data",
+        ]
+        spotify_roots = [root for root in spotify_roots if root.is_dir()]
+        if spotify_roots:
+            cats.append(
+                JunkCategory(
+                    "spotify-cache", "Spotify cache",
+                    "Spotify cached media data (never login or session data).",
+                    spotify_roots,
+                )
+            )
 
     if local:
         cats.append(

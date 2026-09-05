@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "typer>=0.12",
     "rich>=13.7",
-    "psutil>=5.9",
+    "psutil>=7.2.2",
     "send2trash>=1.8",
     "pywin32>=306; sys_platform == 'win32'",
     "winshell>=0.6; sys_platform == 'win32'",

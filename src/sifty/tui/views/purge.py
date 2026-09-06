@@ -25,13 +25,13 @@ _UNMARK = " "
 
 
 class PurgeView(BaseView):
-    BINDINGS = [("space", "toggle_mark", "Mark")]
+    BINDINGS = [("space", "toggle_mark", "Mark group")]
 
     def compose(self) -> ComposeResult:
         yield Static("Dev artifact purge", classes="title")
         yield Static(
             "Scans a project tree for node_modules, dist, __pycache__, target, and "
-            "other build artefacts. Mark rows (click / Space) and purge selected.",
+            "other build artefacts. Groups are selectable by type.",
             classes="subtle",
         )
         yield Input(value=str(Path.home()), id="purge-path", placeholder="Project root to scan")
@@ -50,7 +50,9 @@ class PurgeView(BaseView):
         self._marked: set[str] = set()
         table = self.query_one("#purge-table", DataTable)
         table.cursor_type = "row"
-        self._cols = table.add_columns("", "Pattern", "Size", "Path")
+        table.add_columns("", "Pattern", "Directories", "Size")
+        self._groups: dict[str, list[purge.ArtifactScan]] = {}
+        self._group_keys: list[str] = []
         self.query_one("#purge-panel").display = False
         self.query_one("#purge-actions").display = False
 
@@ -109,6 +111,9 @@ class PurgeView(BaseView):
     def _populate(self, artifacts: list[purge.ArtifactScan]) -> None:
         self._artifacts = artifacts
         self._marked = {str(a.path) for a in artifacts}  # pre-mark all
+        self._groups = {}
+        for artifact in artifacts:
+            self._groups.setdefault(artifact.pattern, []).append(artifact)
         self.query_one("#purge-table", DataTable).loading = False
         if not artifacts:
             self.query_one("#purge-panel").display = False
@@ -122,29 +127,47 @@ class PurgeView(BaseView):
     def _rebuild_table(self) -> None:
         table = self.query_one("#purge-table", DataTable)
         table.clear()
-        for a in self._artifacts:
-            mark = _MARK if str(a.path) in self._marked else _UNMARK
-            table.add_row(mark, a.pattern, human_size(a.size_bytes), str(a.path), key=str(a.path))
+        groups = sorted(
+            self._groups.items(),
+            key=lambda item: sum(a.size_bytes for a in item[1]),
+            reverse=True,
+        )
+        self._group_keys = [pattern for pattern, _artifacts in groups]
+        for pattern, artifacts in groups:
+            paths = {str(a.path) for a in artifacts}
+            selected = len(paths & self._marked)
+            mark = _MARK if selected == len(paths) else "~" if selected else _UNMARK
+            total = sum(a.size_bytes for a in artifacts)
+            table.add_row(mark, pattern, f"{len(artifacts):,}", human_size(total), key=pattern)
         total = sum(a.size_bytes for a in self._artifacts if str(a.path) in self._marked)
         self._status(
             f"{len(self._artifacts)} directories · {len(self._marked)} marked "
-            f"({human_size(total)})"
+            f"({human_size(total)}) · {len(self._groups)} groups"
         )
 
     def _toggle_mark(self, key: str) -> None:
+        group = self._groups.get(key)
+        if group is not None:
+            paths = {str(a.path) for a in group}
+            if paths <= self._marked:
+                self._marked.difference_update(paths)
+            else:
+                self._marked.update(paths)
+            self._rebuild_table()
+            return
+
+        # Keep path toggling available for callers and older integrations that
+        # address an individual artifact directly.
         if key in self._marked:
             self._marked.discard(key)
-            self.query_one("#purge-table", DataTable).update_cell(key, self._cols[0], _UNMARK)
         else:
             self._marked.add(key)
-            self.query_one("#purge-table", DataTable).update_cell(key, self._cols[0], _MARK)
-        total = sum(a.size_bytes for a in self._artifacts if str(a.path) in self._marked)
-        self._status(f"{len(self._artifacts)} directories · {len(self._marked)} marked ({human_size(total)})")
+        self._rebuild_table()
 
     def action_toggle_mark(self) -> None:
         table = self.query_one("#purge-table", DataTable)
-        if table.row_count and table.cursor_row is not None and 0 <= table.cursor_row < len(self._artifacts):
-            self._toggle_mark(str(self._artifacts[table.cursor_row].path))
+        if table.row_count and table.cursor_row is not None and 0 <= table.cursor_row < len(self._group_keys):
+            self._toggle_mark(self._group_keys[table.cursor_row])
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
         if event.row_key and event.row_key.value:

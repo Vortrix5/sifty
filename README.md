@@ -150,7 +150,8 @@ sifty update check           # available updates (winget)
 sifty update apply           # upgrade everything (asks first)
 
 # Developer cleanup
-sifty purge clean            # node_modules, dist, __pycache__, target, …
+sifty purge clean .          # compact summary of node_modules, dist, __pycache__, target, …
+sifty purge clean . --details # show every matching directory and full path
 sifty cleanup duplicates D:\Photos   # de-duplicate (keeps one copy each)
 sifty cleanup large C:\Users\you     # biggest files under a path
 sifty cleanup stale --days 180       # old items in Downloads
@@ -204,7 +205,7 @@ Clean, Disk, Apps, Monitor, Reports, AI):
 - **Home**: volume gauges and a **Run checkup** button that scans everything
   at once; findings come with buttons that fix them right there (clean junk,
   clean stale downloads, apply updates, each behind a confirm).
-- **Clean**: Junk / Purge / Optimize / Smart cleanup under one roof (tabs).
+- **Clean**: Junk / Purge / Optimize / Smart cleanup under one roof (tabs); Purge groups artifact directories by type, largest first.
 - **Apps**: Installed / Updates / Startup / Services, with fuzzy filter,
   sorting, bulk uninstall, and an automatic leftover scan after uninstalling.
 - **AI**: an agentic chat where proposed tool runs show **Run/Skip buttons

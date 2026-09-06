@@ -116,11 +116,30 @@ def test_cleanup_worktrees_apply(monkeypatch, tmp_path):
 
 
 def test_purge_clean_dry(monkeypatch, tmp_path):
-    artifact = SimpleNamespace(path=tmp_path / "dist", pattern="dist", size_bytes=100)
-    monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: [artifact])
+    artifacts = [
+        SimpleNamespace(path=tmp_path / "dist", pattern="dist", size_bytes=100),
+        SimpleNamespace(path=tmp_path / "node_modules", pattern="node_modules", size_bytes=200),
+    ]
+    monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: artifacts)
     result = runner.invoke(app, ["purge", "clean", str(tmp_path)])
     assert result.exit_code == 0
     assert "Dry-run" in result.stdout
+    assert "dist" in result.stdout
+    assert "node_modules" in result.stdout
+    assert str(tmp_path / "dist") not in result.stdout
+    assert str(tmp_path / "node_modules") not in result.stdout
+
+
+def test_purge_clean_details(monkeypatch, tmp_path):
+    artifacts = [
+        SimpleNamespace(path=tmp_path / "dist", pattern="dist", size_bytes=100),
+        SimpleNamespace(path=tmp_path / "node_modules", pattern="node_modules", size_bytes=200),
+    ]
+    monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: artifacts)
+    result = runner.invoke(app, ["purge", "clean", str(tmp_path), "--details"])
+    assert result.exit_code == 0
+    assert str(tmp_path / "dist") in result.stdout
+    assert str(tmp_path / "node_modules") in result.stdout
 
 
 def test_purge_clean_apply(monkeypatch, tmp_path):

@@ -172,7 +172,7 @@ def test_vscode_cache_category_covers_cache_dirs_and_protects_user_folder(monkey
     assert str(code_dir / "GPUCache") in roots
 
     # Verification 3: Settings/extensions folder is never touched
-    assert not any("User" in r for r in roots)
+    assert not any(Path(r).name == "User" for r in roots)
 
 
 def test_installer_app_hint_strips_suffixes():

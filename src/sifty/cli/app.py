@@ -223,10 +223,10 @@ def selfupdate_cmd(
 @app.command("doctor")
 def doctor_cmd() -> None:
     """Report environment readiness: admin, winget, Ollama, disk, reboot state."""
+    import platform
     import winreg
 
     import psutil
-    import platform
 
     from ..ai.client import OllamaClient
     from ..infra.config import audit_log_path
@@ -237,7 +237,8 @@ def doctor_cmd() -> None:
     client = OllamaClient.from_config()
     ollama_up = client.is_available()
     py_version = platform.python_version()
-    win_version = platform.version()
+    win_release, win_build, _sp, _extra = platform.win32_ver()
+    win_version = f"{win_release} ({win_build})" if win_release else platform.version()
 
     # Free space on the system volume.
     sys_root = os.environ.get("SystemDrive", "C:") + "\\"
@@ -294,8 +295,8 @@ def doctor_cmd() -> None:
     def _ok(v: bool) -> str:
         return "[green]yes[/green]" if v else "[red]no[/red]"
 
-    console.print(f"Python Version:   {py_version}")
-    console.print(f"Windows Version:  {win_version}")
+    console.print(f"Python:           {py_version}")
+    console.print(f"Windows:          {win_version}")
     console.print(f"Administrator:    {'[green]yes[/green]' if admin else '[yellow]no[/yellow] (some tasks need it)'}")
     console.print(f"winget:           {'[green]available[/green]' if has_winget else '[red]missing[/red]'}")
 

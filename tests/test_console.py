@@ -1,5 +1,7 @@
 """Tests for shared console formatting helpers."""
 
+from __future__ import annotations
+
 import pytest
 
 from sifty.console import human_size

@@ -35,6 +35,42 @@ def test_doctor_json_keys():
     assert {"administrator", "winget", "ollama_reachable"} <= set(data)
 
 
+def test_ai_status_json_when_ollama_is_reachable(monkeypatch):
+    from sifty.cli.commands import ai_group
+
+    monkeypatch.setattr(ai_group.OllamaClient, "is_available", lambda self: True)
+    monkeypatch.setattr(ai_group.OllamaClient, "list_models", lambda self: ["qwen2.5:3b"])
+
+    result = runner.invoke(app, ["--json", "ai", "status"])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data == {
+        "host": "http://localhost:11434",
+        "model": "qwen2.5:3b",
+        "reachable": True,
+        "pulled": True,
+    }
+
+
+def test_ai_status_json_when_ollama_is_not_reachable(monkeypatch):
+    from sifty.cli.commands import ai_group
+
+    monkeypatch.setattr(ai_group.OllamaClient, "is_available", lambda self: False)
+    monkeypatch.setattr(ai_group.OllamaClient, "list_models", lambda self: [])
+
+    result = runner.invoke(app, ["--json", "ai", "status"])
+
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data == {
+        "host": "http://localhost:11434",
+        "model": "qwen2.5:3b",
+        "reachable": False,
+        "pulled": False,
+    }
+
+
 def test_without_json_flag_output_is_not_json():
     result = runner.invoke(app, ["disk", "volumes"])
     assert result.exit_code == 0

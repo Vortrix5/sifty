@@ -28,7 +28,7 @@ breaking changes to the CLI or behavior require a major bump.
 ## Cutting a release
 
 1. Bump the version and update the changelog. `src/sifty/__init__.py`
-   (`__version__`) is the single source of truth — `pyproject.toml` reads it
+   (`__version__`) is the single source of truth, `pyproject.toml` reads it
    dynamically, so you only edit it once:
    ```powershell
    python scripts/bump_version.py 0.6.1   # edits __version__ + syncs the rest

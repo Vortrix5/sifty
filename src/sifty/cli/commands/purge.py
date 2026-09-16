@@ -6,12 +6,42 @@ from pathlib import Path
 
 import typer
 from rich.table import Table
+from rich.text import Text
 
 from ...console import confirm, console, human_size, success, warn
 from ...core import history, purge
 from .. import output
 
 app = typer.Typer(no_args_is_help=True, help="Find and remove dev artifact directories (node_modules, dist, __pycache__, …).")
+
+
+def _print_artifacts(
+    artifacts: list[purge.ArtifactScan], *, title: str, details: bool = True
+) -> None:
+    """Render artifacts selected by a purge scan."""
+    total = sum(a.size_bytes for a in artifacts)
+    if details:
+        console.print(Text(title, style="bold"))
+        for artifact in artifacts:
+            line = f"{artifact.pattern}  {human_size(artifact.size_bytes):>10}  {artifact.path}"
+            console.print(Text(line), crop=False, overflow="ignore")
+        console.print(Text(f"Total: {len(artifacts):,} directories, {human_size(total)}", style="bold"))
+        return
+
+    table = Table(title=title)
+    table.add_column("Pattern", style="dim")
+    table.add_column("Directories", justify="right")
+    table.add_column("Size", justify="right")
+    grouped: dict[str, tuple[int, int]] = {}
+    for artifact in artifacts:
+        count, size = grouped.get(artifact.pattern, (0, 0))
+        grouped[artifact.pattern] = (count + 1, size + artifact.size_bytes)
+    for pattern, (count, size) in sorted(grouped.items(), key=lambda item: item[1][1], reverse=True):
+        table.add_row(pattern, f"{count:,}", human_size(size))
+
+    table.add_section()
+    table.add_row("[bold]Total[/bold]", f"[bold]{len(artifacts):,}[/bold]", f"[bold]{human_size(total)}[/bold]")
+    console.print(table)
 
 
 @app.command("scan")
@@ -36,17 +66,7 @@ def scan_cmd(
         success(f"No artifact directories found under {path}.")
         return
 
-    table = Table(title=f"Artifact directories under {path}")
-    table.add_column("Pattern", style="dim")
-    table.add_column("Size", justify="right")
-    table.add_column("Path")
-    total = 0
-    for a in artifacts:
-        table.add_row(a.pattern, human_size(a.size_bytes), str(a.path))
-        total += a.size_bytes
-    table.add_section()
-    table.add_row("", f"[bold]{human_size(total)}[/bold]", f"[dim]{len(artifacts):,} directories[/dim]")
-    console.print(table)
+    _print_artifacts(artifacts, title=f"Artifact directories under {path}")
     console.print("\nRun [cyan]sifty purge clean PATH --apply[/cyan] to remove them.")
 
 
@@ -55,6 +75,7 @@ def clean_cmd(
     path: Path = typer.Argument(..., help="Root directory to clean."),
     apply: bool = typer.Option(False, "--apply", help="Actually move artifacts to the Recycle Bin."),
     yes: bool = typer.Option(False, "--yes", "-y", help="Skip the confirmation prompt."),
+    details: bool = typer.Option(False, "--details", help="Show every matching directory and its full path."),
 ) -> None:
     """Remove dev artifact directories under PATH (dry-run unless --apply)."""
     path = path.expanduser()
@@ -70,6 +91,7 @@ def clean_cmd(
         return
 
     total = sum(a.size_bytes for a in artifacts)
+    _print_artifacts(artifacts, title=f"Artifact summary under {path}", details=details)
     console.print(
         f"Found [bold]{len(artifacts):,}[/bold] artifact directories "
         f"totalling [bold]{human_size(total)}[/bold]."

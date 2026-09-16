@@ -15,6 +15,7 @@ from ...ai.client import OllamaClient
 from ...ai.tools import TOOLS
 from ...console import console, error, human_size, success, warn
 from ...core import disk
+from .. import output
 
 app = typer.Typer(no_args_is_help=True, help="Ask the local AI for maintenance advice (Ollama).")
 
@@ -29,7 +30,20 @@ _ACTION_LABEL = {"run": "auto-run", "confirm": "ask first", "skip": "never (bloc
 def status_cmd() -> None:
     """Check whether the local Ollama model is reachable."""
     client = OllamaClient.from_config()
-    if client.is_available():
+    reachable = client.is_available()
+    if output.json_enabled():
+        # Only the JSON consumer needs this, and it costs another round-trip.
+        pulled = client.model in client.list_models() if reachable else False
+        output.emit(
+            {
+                "host": client.host,
+                "model": client.model,
+                "reachable": reachable,
+                "pulled": pulled,
+            }
+        )
+        return
+    if reachable:
         success(f"Ollama is running at {client.host} (model: {client.model}).")
     else:
         error(f"Ollama not reachable at {client.host}.")

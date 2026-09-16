@@ -35,40 +35,73 @@ def test_doctor_json_keys():
     assert {"administrator", "winget", "ollama_reachable"} <= set(data)
 
 
-def test_ai_status_json_when_ollama_is_reachable(monkeypatch):
+def _pin_ollama_client(monkeypatch, *, reachable: bool, models: list[str]) -> None:
+    """Pin the client so the assertions don't depend on the local config.toml."""
+    from sifty.ai.client import OllamaClient
     from sifty.cli.commands import ai_group
 
-    monkeypatch.setattr(ai_group.OllamaClient, "is_available", lambda self: True)
-    monkeypatch.setattr(ai_group.OllamaClient, "list_models", lambda self: ["qwen2.5:3b"])
+    pinned = OllamaClient(host="http://ollama.test:11434", model="test-model", timeout=1.0)
+    monkeypatch.setattr(
+        ai_group.OllamaClient, "from_config", classmethod(lambda cls, config=None: pinned)
+    )
+    monkeypatch.setattr(ai_group.OllamaClient, "is_available", lambda self: reachable)
+    monkeypatch.setattr(ai_group.OllamaClient, "list_models", lambda self: models)
+
+
+def test_ai_status_json_when_ollama_is_reachable(monkeypatch):
+    _pin_ollama_client(monkeypatch, reachable=True, models=["test-model"])
 
     result = runner.invoke(app, ["--json", "ai", "status"])
 
     assert result.exit_code == 0
     data = json.loads(result.stdout)
     assert data == {
-        "host": "http://localhost:11434",
-        "model": "qwen2.5:3b",
+        "host": "http://ollama.test:11434",
+        "model": "test-model",
         "reachable": True,
         "pulled": True,
     }
 
 
 def test_ai_status_json_when_ollama_is_not_reachable(monkeypatch):
-    from sifty.cli.commands import ai_group
-
-    monkeypatch.setattr(ai_group.OllamaClient, "is_available", lambda self: False)
-    monkeypatch.setattr(ai_group.OllamaClient, "list_models", lambda self: [])
+    _pin_ollama_client(monkeypatch, reachable=False, models=[])
 
     result = runner.invoke(app, ["--json", "ai", "status"])
 
     assert result.exit_code == 0
     data = json.loads(result.stdout)
     assert data == {
-        "host": "http://localhost:11434",
-        "model": "qwen2.5:3b",
+        "host": "http://ollama.test:11434",
+        "model": "test-model",
         "reachable": False,
         "pulled": False,
     }
+
+
+def test_ai_status_json_when_model_not_pulled(monkeypatch):
+    """Reachable, but the configured model isn't among the pulled ones."""
+    _pin_ollama_client(monkeypatch, reachable=True, models=["some-other-model"])
+
+    result = runner.invoke(app, ["--json", "ai", "status"])
+
+    assert result.exit_code == 0
+    assert json.loads(result.stdout)["pulled"] is False
+
+
+def test_ai_status_human_mode_does_not_list_models(monkeypatch):
+    """`pulled` is JSON-only, so human mode must not pay the extra round-trip."""
+    from sifty.cli.commands import ai_group
+
+    _pin_ollama_client(monkeypatch, reachable=True, models=["test-model"])
+    calls: list[int] = []
+    monkeypatch.setattr(
+        ai_group.OllamaClient, "list_models", lambda self: calls.append(1) or ["test-model"]
+    )
+
+    result = runner.invoke(app, ["ai", "status"])
+
+    assert result.exit_code == 0
+    assert calls == []
 
 
 def test_without_json_flag_output_is_not_json():

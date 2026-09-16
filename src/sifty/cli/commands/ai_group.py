@@ -31,8 +31,9 @@ def status_cmd() -> None:
     """Check whether the local Ollama model is reachable."""
     client = OllamaClient.from_config()
     reachable = client.is_available()
-    pulled = client.model in client.list_models() if reachable else False
     if output.json_enabled():
+        # Only the JSON consumer needs this, and it costs another round-trip.
+        pulled = client.model in client.list_models() if reachable else False
         output.emit(
             {
                 "host": client.host,

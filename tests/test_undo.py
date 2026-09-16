@@ -34,6 +34,7 @@ def test_undo_restores_all_items(temp_history, monkeypatch):
     assert (restored, failed) == (2, 0)
     assert set(restored_paths) == {"a", "b"}
 
+
 def test_undo_counts_partial_failure(temp_history, monkeypatch):
     restored_paths = []
 
@@ -51,6 +52,8 @@ def test_undo_counts_partial_failure(temp_history, monkeypatch):
     assert (restored, failed) == (1, 1)
     assert set(restored_paths) == {"a", "b"}
     assert restored_paths == ["a", "b"]
+
+
 def test_undo_marks_only_successful_items(temp_history, monkeypatch):
     marked_ids = []
 

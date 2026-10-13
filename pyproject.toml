@@ -35,7 +35,7 @@ dependencies = [
     "send2trash>=1.8",
     "pywin32>=306; sys_platform == 'win32'",
     "winshell>=0.6; sys_platform == 'win32'",
-    "windows-toasts>=1.1; sys_platform == 'win32'",
+    "windows-toasts>=1.3.1; sys_platform == 'win32'",
     "httpx>=0.27",
     "textual>=0.60",
 ]

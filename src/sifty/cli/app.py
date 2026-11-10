@@ -380,7 +380,7 @@ def logs_cmd(
         return
     console.print(f"[dim]{path}[/dim]\n")
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    for line in lines[-tail:]:
+    for line in lines[-tail:] if tail > 0 else []:
         console.print(line, markup=False, highlight=False)
 
 

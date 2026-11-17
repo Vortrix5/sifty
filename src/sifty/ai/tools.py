@@ -278,7 +278,7 @@ def _handler_purge_artifacts(args: dict) -> ToolResult:
     artifacts = scan_artifacts(path)
     if not artifacts:
         return ToolResult(summary=f"No artifact directories found under {path}.")
-    result = purge_artifacts([a.path for a in artifacts], dry_run=False)
+    result = purge_artifacts(artifacts, dry_run=False)
     return ToolResult(
         summary=f"Purged {result.items} artifact directories ({human_size(result.bytes_freed)}) "
                 f"to the Recycle Bin under {path}."

@@ -108,7 +108,7 @@ def clean_cmd(
         warn("Cancelled.")
         return
 
-    result = purge.purge_artifacts([a.path for a in artifacts], dry_run=False)
+    result = purge.purge_artifacts(artifacts, dry_run=False)
     history.record_clean("purge", str(path), result.bytes_freed, result.items, result.trashed)
     success(f"Sent {result.items:,} directories ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:

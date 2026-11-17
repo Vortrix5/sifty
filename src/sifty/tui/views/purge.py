@@ -203,8 +203,8 @@ class PurgeView(BaseView):
         if not self._marked:
             self._status("Nothing marked.")
             return
-        paths = [Path(k) for k in self._marked]
-        total = sum(a.size_bytes for a in self._artifacts if str(a.path) in self._marked)
+        paths = [a for a in self._artifacts if str(a.path) in self._marked]
+        total = sum(a.size_bytes for a in paths)
         ok = await self.app.push_screen_wait(
             ConfirmModal(
                 f"Move {len(paths)} artifact director{'y' if len(paths) == 1 else 'ies'} "
@@ -217,7 +217,7 @@ class PurgeView(BaseView):
             self.do_purge(paths)
 
     @work(thread=True, exclusive=True, group="purge-scan")
-    def do_purge(self, paths: list[Path]) -> None:
+    def do_purge(self, paths: list[purge.ArtifactScan]) -> None:
         result = purge.purge_artifacts(paths, dry_run=False)
         history.record_clean("purge", str(self._path()), result.bytes_freed, result.items, result.trashed)
         self.app.call_from_thread(self._after_purge, result.bytes_freed, result.items, len(result.skipped))

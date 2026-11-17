@@ -71,3 +71,12 @@ def test_renamed_tool_keeps_old_policy(temp_appdata):
 
     policy.reset_policy("schedule_maintenance")
     assert policy.all_policies() == {}
+
+
+def test_next_policy_cycles():
+    assert policy.next_policy(None) == "ask"
+    assert policy.next_policy("default") == "ask"
+    assert policy.next_policy("ask") == "auto"
+    assert policy.next_policy("auto") == "never"
+    assert policy.next_policy("never") == "default"
+    assert policy.next_policy("bogus") == "ask"

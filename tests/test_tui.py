@@ -547,3 +547,36 @@ async def test_disk_view_shows_biggest_items():
         view._show_biggest(Path("C:/demo"), [(Path("big.bin"), 5000), (Path("small.txt"), 10)])
         tree = pilot.app.query_one("#biggest-tree", Tree)
         assert len(tree.root.children) == 2
+
+
+async def test_ai_tool_permissions_panel_cycles_policy():
+    from textual.widgets import DataTable
+
+    from sifty.ai import policy
+
+    async with _make_app().run_test(size=(160, 60)) as pilot:
+        await pilot.app.show("ai")
+        await pilot.pause()
+        table = pilot.app.query_one("#policy-table", DataTable)
+        assert table.display is False            # hidden until asked for
+
+        await pilot.click("#toggle-policies")
+        await pilot.pause()
+        assert table.display is True
+        assert table.row_count >= 20
+
+        # Enter on the first tool steps it default -> ask -> auto.
+        first = table.coordinate_to_cell_key((0, 0)).row_key.value
+        table.focus()
+        table.move_cursor(row=0)
+        await pilot.press("enter")
+        await pilot.pause()
+        assert policy.get_policy(first) == "ask"
+        await pilot.press("enter")
+        await pilot.pause()
+        assert policy.get_policy(first) == "auto"
+        assert table.get_cell_at((0, 3)) == "auto-run"
+
+        await pilot.click("#toggle-policies")
+        await pilot.pause()
+        assert table.display is False

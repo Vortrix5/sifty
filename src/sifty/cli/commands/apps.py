@@ -188,3 +188,41 @@ def leftovers_cmd(
     success(f"Sent {result.items:,} item(s) ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:
         warn(f"{len(result.skipped):,} item(s) skipped (in use or protected).")
+
+
+@app.command("orphaned-data")
+def orphaned_data_cmd(
+    days: int = typer.Option(90, "--days", help="Only folders untouched for this many days."),
+) -> None:
+    """Find AppData folders that no installed app seems to own (read-only)."""
+    import time
+
+    from ...core.orphans import find_orphaned_app_data
+
+    with console.status("Checking AppData against installed apps…") if not output.json_enabled() else _null():
+        items = find_orphaned_app_data(days)
+
+    if output.json_enabled():
+        output.emit([
+            {"path": str(i.path), "size_bytes": i.size_bytes, "last_modified": i.last_modified}
+            for i in items
+        ])
+        return
+
+    if not items:
+        success(f"No orphaned app data found (folders untouched for {days}+ days).")
+        return
+
+    total = sum(i.size_bytes for i in items)
+    table = Table(title=f"Possibly orphaned app data ({human_size(total)})")
+    table.add_column("Folder")
+    table.add_column("Last used", style="dim")
+    table.add_column("Size", justify="right")
+    for i in items:
+        table.add_row(str(i.path), time.strftime("%Y-%m-%d", time.localtime(i.last_modified)),
+                      human_size(i.size_bytes))
+    console.print(table)
+    console.print(
+        "[dim]Nothing installed matches these, but check before removing. To remove one: "
+        f'[cyan]sifty apps leftovers "{items[0].path.name}" --apply[/cyan][/dim]'
+    )

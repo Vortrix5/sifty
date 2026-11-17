@@ -8,6 +8,20 @@ public release were development milestones.
 
 ### Added
 
+- **`sifty do "<request>"`**: tell the local AI agent what you want in one
+  line ("free up some space on C:") and it works through it, asking before
+  every change. `--read-only` lets it look around without changing anything.
+- **More for the agent to work with**: it can now find and clean stale
+  downloads and large files, list and change optional Windows services, and
+  compact WSL2 / Hyper-V virtual disks. Destructive tools always count as high
+  risk, stale-download cleanup won't go below 30 days, and large-file cleanup
+  only takes exact file paths.
+- **Tool permissions in the TUI**: a button in the AI view opens every tool
+  with its policy; Enter or click cycles default, ask, auto and never.
+- **Orphaned app data**: `sifty apps orphaned-data` lists AppData folders left
+  by apps that are no longer installed. Read-only and cautious: a folder only
+  shows up when nothing installed, on PATH, in the Start Menu or running
+  matches it and it hasn't been used in 90 days. The agent can run it too.
 - **Spotify cache** junk category (thanks @Tanvinaik09, #40).
 - **Opera and Opera GX** browser caches, across Local and Roaming and every
   profile (thanks @koteshyelamati, #4).
@@ -20,6 +34,10 @@ public release were development milestones.
 
 - **Faster purge**: directory sizes come from `os.scandir` across a few
   threads, and `clean` no longer walks everything a second time (#43).
+- **Purge shows progress** while it sends folders to the Recycle Bin, in the
+  CLI and the TUI.
+- The agent tool `schedule_maintenance` is now `schedule_cleanup`; policies
+  saved under the old name still apply.
 
 ### Fixed
 

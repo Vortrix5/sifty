@@ -25,9 +25,10 @@ from rich.table import Table
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Button, Input, Select, Static
+from textual.widgets import Button, DataTable, Input, Select, Static
 
 from ...ai import context as ai_context
+from ...ai import policy as ai_policy
 from ...ai.advisor import SYSTEM_PROMPT
 from ...ai.agent import (
     TOOL_USE_NOTE,
@@ -35,6 +36,7 @@ from ...ai.agent import (
     FinalAnswerEvent,
     ToolCallEvent,
     ToolResultEvent,
+    _resolve_action,
     current_autonomy,
     set_autonomy,
 )
@@ -69,6 +71,9 @@ _TOOL_ACTIONS: dict[str, tuple[str, str]] = {
     "find_orphan_apps": ("Review orphans…", "apps"),
     "scan_project_artifacts": ("Purge artifacts…", "purge"),
     "system_status": ("Open Monitor…", "monitor"),
+    "find_stale_downloads": ("Review old downloads…", "cleanup"),
+    "find_large_files": ("Review large files…", "cleanup"),
+    "list_services": ("Open Services…", "services"),
 }
 
 
@@ -82,6 +87,13 @@ class AIView(BaseView):
                 _AUTONOMY_OPTIONS, id="autonomy",
                 value=current_autonomy(), allow_blank=False,
             )
+            yield Button("Tool permissions", id="toggle-policies")
+        yield Static(
+            "Enter or click a tool to change it: default follows Autonomy, "
+            "ask always asks, auto never asks, never blocks it.",
+            id="policy-hint", classes="subtle",
+        )
+        yield DataTable(id="policy-table")
         yield VerticalScroll(id="chat-log")
         yield Input(
             placeholder="Ask about cleanup, disk usage, safety…  (Enter to send)",
@@ -96,6 +108,10 @@ class AIView(BaseView):
         # In-flight inline approval: (worker wake event, result holder, chat row).
         self._pending: tuple[threading.Event, dict, Horizontal] | None = None
         self._autonomy = current_autonomy()
+        table = self.query_one("#policy-table", DataTable)
+        table.cursor_type = "row"
+        table.add_columns("Tool", "Risk", "Policy", "Effective")
+        self._show_policies(False)
         # Conversation persists on the app across navigation and, seeded once per
         # session from ai_memory.db, across restarts too.
         if getattr(self.app, "_ai_messages", None) is None:
@@ -130,6 +146,40 @@ class AIView(BaseView):
         if event.select.id == "autonomy" and event.value not in (None, Select.BLANK):
             self._autonomy = str(event.value)
             set_autonomy(self._autonomy)
+            self._refresh_policies()
+
+    # ------------------------------------------------------------ permissions
+    def _show_policies(self, show: bool) -> None:
+        self.query_one("#policy-table").display = show
+        self.query_one("#policy-hint").display = show
+        if show:
+            self._refresh_policies()
+
+    def _refresh_policies(self) -> None:
+        """Rebuild the per-tool permission rows, keeping the cursor in place."""
+        table = self.query_one("#policy-table", DataTable)
+        if not table.display:
+            return
+        cursor = table.cursor_row
+        table.clear()
+        policies = ai_policy.all_policies()
+        for tool in ALL_TOOLS:
+            set_p = policies.get(tool.name, "default")
+            action = _resolve_action(tool, self._autonomy, set_p)
+            color = _RISK_COLOR.get(tool.risk, "white")
+            table.add_row(
+                tool.name, f"[{color}]{tool.risk}[/{color}]", set_p,
+                ai_policy.EFFECTIVE_LABELS[action], key=tool.name,
+            )
+        if cursor is not None and table.row_count:
+            table.move_cursor(row=min(cursor, table.row_count - 1))
+
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        if event.data_table.id != "policy-table" or not event.row_key.value:
+            return
+        name = event.row_key.value
+        ai_policy.set_policy(name, ai_policy.next_policy(ai_policy.get_policy(name)))
+        self._refresh_policies()
 
     # ------------------------------------------------------------------ input
     async def on_input_submitted(self, event: Input.Submitted) -> None:
@@ -137,6 +187,9 @@ class AIView(BaseView):
         self._submit(event.value)
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "toggle-policies":
+            self._show_policies(not self.query_one("#policy-table").display)
+            return
         if event.button.has_class("approve") or event.button.has_class("deny"):
             self._resolve_approval(approved=event.button.has_class("approve"))
             return

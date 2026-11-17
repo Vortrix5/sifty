@@ -30,6 +30,19 @@ logger = logging.getLogger("sifty.ai")
 
 VALID_POLICIES = ("auto", "ask", "never", "default")
 
+# How the agent's verdict for a tool reads to a person (CLI table + TUI panel).
+EFFECTIVE_LABELS = {"run": "auto-run", "confirm": "ask first", "skip": "never (blocked)"}
+
+# Order the TUI cycles through when you press Enter on a tool.
+_CYCLE = ("default", "ask", "auto", "never")
+
+
+def next_policy(current: str | None) -> str:
+    """The policy after ``current`` in the default > ask > auto > never loop."""
+    current = current or "default"
+    idx = _CYCLE.index(current) if current in _CYCLE else 0
+    return _CYCLE[(idx + 1) % len(_CYCLE)]
+
 
 def state_file():
     return app_data_dir() / "ai_state.json"

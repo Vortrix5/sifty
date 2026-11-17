@@ -22,8 +22,6 @@ app = typer.Typer(no_args_is_help=True, help="Ask the local AI for maintenance a
 policy_app = typer.Typer(no_args_is_help=True, help="Per-tool AI action policies (auto/ask/never).")
 app.add_typer(policy_app, name="policy")
 
-# How _resolve_action's verdict reads to a human.
-_ACTION_LABEL = {"run": "auto-run", "confirm": "ask first", "skip": "never (blocked)"}
 
 
 @app.command("status")
@@ -112,7 +110,7 @@ def policy_list_cmd() -> None:
     for t in TOOLS:
         set_p = policies.get(t.name, "-")
         action = _resolve_action(t, level, policies.get(t.name, "default"))
-        table.add_row(t.name, t.risk, set_p, _ACTION_LABEL[action])
+        table.add_row(t.name, t.risk, set_p, ai_policy.EFFECTIVE_LABELS[action])
     console.print(table)
 
 

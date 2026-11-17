@@ -188,6 +188,8 @@ Tree {
 #ai-controls { height: auto; margin-bottom: 1; }
 #ai-controls .ctl-label { padding: 1 1 0 0; color: $text-muted; width: auto; }
 #ai-controls Select { width: 30; }
+#ai-controls Button { margin-left: 2; }
+#policy-table { height: auto; max-height: 16; margin-bottom: 1; }
 
 /* Inline tool-approval row inside the chat log. */
 #chat-log .approval-row { height: auto; margin-bottom: 1; }

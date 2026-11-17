@@ -4,7 +4,7 @@ All notable changes to Sifty. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com); versions before the first
 public release were development milestones.
 
-## [0.9.0] - 2026-07
+## [0.9.0] - 2026-09
 
 ### Added
 
@@ -24,6 +24,14 @@ public release were development milestones.
 - **Run agent from Home**: a "Run agent" button runs the whole proactive pass
   and cleans the low-risk allowlist to the Recycle Bin behind a confirm, showing
   the checkup, any anomalies, and what it cleaned right there.
+- **VS Code cache cleanup**: the junk cleaner now covers VS Code's `Cache`,
+  `CachedData`, `Code Cache`, and `GPUCache` directories, never the `User`
+  folder that holds your settings, keybindings, and extensions. Thanks
+  @YoMosa2009.
+- `sifty doctor` now reports the Python and Windows version it is running on,
+  in both the table and the JSON output. Thanks @JMar2021.
+- Test coverage for `human_size()` across the unit boundaries. Thanks
+  @be-student.
 
 ### Changed
 

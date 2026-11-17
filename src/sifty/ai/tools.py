@@ -477,6 +477,30 @@ def _handler_compact_virtual_disks(_args: dict) -> ToolResult:
                               f"Disks in use (a running WSL distro or VM) can't be compacted.")
 
 
+def _handler_find_orphaned_app_data(args: dict) -> ToolResult:
+    import time
+
+    from ..core.orphans import find_orphaned_app_data
+    try:
+        days = max(int(args.get("days") or 90), 30)
+    except (TypeError, ValueError):
+        days = 90
+    items = find_orphaned_app_data(days)
+    if not items:
+        return ToolResult(summary=f"No orphaned app data found (AppData folders untouched for "
+                                  f"{days}+ days that nothing installed matches).")
+    rows = [[i.path.name, time.strftime("%Y-%m-%d", time.localtime(i.last_modified)),
+             human_size(i.size_bytes), str(i.path)] for i in items]
+    total = sum(i.size_bytes for i in items)
+    return ToolResult(
+        summary=f"{len(items)} AppData folder(s) ({human_size(total)}) that no installed app seems "
+                f"to own and that haven't been used in {days}+ days. Shown to the user as a table. "
+                f"These are guesses: tell the user to check each one, and that "
+                f'`sifty apps leftovers "<folder name>" --apply` removes one with a preview.',
+        title="Possibly orphaned app data", columns=["Folder", "Last used", "Size", "Path"], rows=rows,
+    )
+
+
 def _handler_apply_updates(args: dict) -> ToolResult:
     from ..core.updates import apply_upgrades
     pkg_id = args.get("id") or None
@@ -757,6 +781,19 @@ TOOLS: list[Tool] = [
         parameters={"type": "object", "properties": {}, "required": []},
         risk="high",
         handler=_handler_compact_virtual_disks,
+    ),
+    Tool(
+        name="find_orphaned_app_data",
+        description="Find AppData folders left behind by apps that are no longer installed (read-only; matches against installed apps, shortcuts and running programs).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "days": {"type": "integer", "description": "Only folders untouched for this many days (minimum 30, default 90)"}
+            },
+            "required": [],
+        },
+        risk="read",
+        handler=_handler_find_orphaned_app_data,
     ),
 ]
 

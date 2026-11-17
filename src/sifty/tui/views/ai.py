@@ -74,6 +74,7 @@ _TOOL_ACTIONS: dict[str, tuple[str, str]] = {
     "find_stale_downloads": ("Review old downloads…", "cleanup"),
     "find_large_files": ("Review large files…", "cleanup"),
     "list_services": ("Open Services…", "services"),
+    "find_orphaned_app_data": ("Open Apps…", "apps"),
 }
 
 

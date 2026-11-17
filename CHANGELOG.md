@@ -9,6 +9,8 @@ public release were development milestones.
 ### Added
 
 - **Spotify cache** junk category (thanks @Tanvinaik09, #40).
+- **Opera and Opera GX** browser caches, across Local and Roaming and every
+  profile (thanks @koteshyelamati, #4).
 - **Compact purge output**: `sifty purge clean` shows one row per pattern
   instead of hundreds of paths; `--details` brings back the full list. In the
   TUI, results are grouped and a group opens to mark single directories

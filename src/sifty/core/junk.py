@@ -249,6 +249,21 @@ def junk_categories(config=None) -> list[JunkCategory]:
             )
         )
 
+    # Spotify caches (re-downloaded on demand; login data lives elsewhere)
+    if local:
+        spotify_roots = [
+            root for root in (local / "Spotify" / "Storage", local / "Spotify" / "Data")
+            if root.is_dir()
+        ]
+        if spotify_roots:
+            cats.append(
+                JunkCategory(
+                    "spotify-cache", "Spotify cache",
+                    "Spotify cached audio and data (never login or session data).",
+                    spotify_roots,
+                )
+            )
+
     # VS Code cache (Chromium/V8 style, safe to clear)
     vscode_roots = _vscode_cache_roots()
     if vscode_roots:

@@ -175,6 +175,39 @@ def test_vscode_cache_category_covers_cache_dirs_and_protects_user_folder(monkey
     assert not any(Path(r).name == "User" for r in roots)
 
 
+def test_spotify_cache_category_covers_cache_dirs_and_safeguards_session(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    spotify = local / "Spotify"
+    (spotify / "Storage").mkdir(parents=True)
+    (spotify / "Data").mkdir(parents=True)
+    (spotify / "Local Storage").mkdir(parents=True)
+
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("TMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    cats = {c.key: c for c in junk.junk_categories(Config())}
+    assert "spotify-cache" in cats
+
+    roots = {str(r) for r in cats["spotify-cache"].roots}
+    assert str(spotify / "Storage") in roots
+    assert str(spotify / "Data") in roots
+    assert str(spotify / "Local Storage") not in roots
+
+
+def test_spotify_cache_category_absent_without_spotify(monkeypatch, tmp_path):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
+    monkeypatch.setenv("TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("TMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    keys = {c.key for c in junk.junk_categories(Config())}
+    assert "spotify-cache" not in keys
+
+
 def test_installer_app_hint_strips_suffixes():
     """Verify that installer filenames are properly cleaned into app hints."""
     assert junk._installer_app_hint(Path("Discord-Setup-1.2.3.exe")) == "discord setup"

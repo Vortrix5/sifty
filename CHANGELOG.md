@@ -4,6 +4,27 @@ All notable changes to Sifty. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com); versions before the first
 public release were development milestones.
 
+## [Unreleased]
+
+### Added
+
+- **Spotify cache** junk category (thanks @Tanvinaik09, #40).
+- **Compact purge output**: `sifty purge clean` shows one row per pattern
+  instead of hundreds of paths; `--details` brings back the full list. In the
+  TUI, results are grouped and a group opens to mark single directories
+  (thanks @RaulClauson, #41).
+
+### Changed
+
+- **Faster purge**: directory sizes come from `os.scandir` across a few
+  threads, and `clean` no longer walks everything a second time (#43).
+
+### Fixed
+
+- `purge` no longer descends into virtualenvs or `site-packages`, where it
+  offered installed packages named `coverage`, `build` or `vendor`.
+- `sifty ai status --json` emits JSON (#50).
+
 ## [0.9.0] - 2026-09
 
 ### Added

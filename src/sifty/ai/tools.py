@@ -194,7 +194,7 @@ def _handler_toggle_startup(args: dict) -> ToolResult:
     )
 
 
-def _handler_schedule_maintenance(args: dict) -> ToolResult:
+def _handler_schedule_cleanup(args: dict) -> ToolResult:
     from ..core import schedule
     name = args.get("name", "sifty-auto")
     profile = args.get("profile", "")
@@ -462,7 +462,7 @@ TOOLS: list[Tool] = [
         handler=_handler_system_status,
     ),
     Tool(
-        name="schedule_maintenance",
+        name="schedule_cleanup",
         description="Schedule a recurring automatic cleanup. Use when the user asks to automate or schedule a cleanup. Extract the schedule from their request and provide the profile name.",
         parameters={
             "type": "object",
@@ -476,7 +476,7 @@ TOOLS: list[Tool] = [
             "required": ["name", "profile", "frequency", "time"],
         },
         risk="low",
-        handler=_handler_schedule_maintenance,
+        handler=_handler_schedule_cleanup,
     ),
     Tool(
         name="prune_worktrees",
@@ -535,10 +535,18 @@ TOOLS: list[Tool] = [
 
 _TOOL_MAP: dict[str, Tool] = {t.name: t for t in TOOLS}
 
+# Old tool names still accepted, so saved policies and older chats keep working.
+ALIASES: dict[str, str] = {"schedule_maintenance": "schedule_cleanup"}
+
+
+def canonical(name: str) -> str:
+    """The current name for ``name`` (resolves renamed tools)."""
+    return ALIASES.get(name, name)
+
 
 def get(name: str) -> Tool | None:
-    """Look up a tool by name."""
-    return _TOOL_MAP.get(name)
+    """Look up a tool by name (old names resolve to their replacement)."""
+    return _TOOL_MAP.get(canonical(name))
 
 
 def ollama_schemas() -> list[dict]:

@@ -23,6 +23,7 @@ import json
 import logging
 
 from ..infra.config import app_data_dir
+from .tools import canonical
 from .tools import get as get_tool
 
 logger = logging.getLogger("sifty.ai")
@@ -62,7 +63,9 @@ def all_policies() -> dict[str, str]:
     raw = load_state().get("tool_policies", {})
     if not isinstance(raw, dict):
         return {}
-    return {k: v for k, v in raw.items() if isinstance(v, str) and v in VALID_POLICIES}
+    return {
+        canonical(k): v for k, v in raw.items() if isinstance(v, str) and v in VALID_POLICIES
+    }
 
 
 def get_policy(name: str) -> str | None:
@@ -81,6 +84,10 @@ def set_policy(name: str, policy: str) -> bool:
     policies = state.get("tool_policies")
     if not isinstance(policies, dict):
         policies = {}
+    name = canonical(name)
+    # Drop any entry stored under an old name for the same tool.
+    for old_name in [k for k in policies if k != name and canonical(k) == name]:
+        policies.pop(old_name)
     if policy == "default":
         policies.pop(name, None)
     else:
@@ -97,6 +104,8 @@ def reset_policy(name: str | None = None) -> bool:
     else:
         policies = state.get("tool_policies")
         if isinstance(policies, dict):
-            policies.pop(name, None)
+            name = canonical(name)
+            for key in [k for k in policies if canonical(k) == name]:
+                policies.pop(key)
             state["tool_policies"] = policies
     return save_state(state)

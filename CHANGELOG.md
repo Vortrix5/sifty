@@ -4,7 +4,7 @@ All notable changes to Sifty. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com); versions before the first
 public release were development milestones.
 
-## [Unreleased]
+## [0.10.0] - 2026-11
 
 ### Added
 

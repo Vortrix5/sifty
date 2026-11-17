@@ -140,33 +140,72 @@ def test_discord_cache_category_covers_flavors_and_safeguards_session(monkeypatc
     assert not any("Local Storage" in r for r in roots)
 
 
+def test_vscode_cache_category_covers_cache_dirs_and_protects_user_folder(monkeypatch, tmp_path):
+    appdata = tmp_path / "appdata"
 
-    
-    def test_spotify_cache_category_covers_cache_dirs_and_safeguards_session(monkeypatch, tmp_path):
-    local = tmp_path / "local"
-    spotify = local / "Spotify"
+    code_dir = appdata / "Code"
+    (code_dir / "Cache").mkdir(parents=True)
+    (code_dir / "CachedData").mkdir(parents=True)
+    (code_dir / "Code Cache").mkdir(parents=True)
+    (code_dir / "GPUCache").mkdir(parents=True)
+    (code_dir / "User").mkdir(parents=True)
 
-    (spotify / "Storage").mkdir(parents=True)
-    (spotify / "Data").mkdir(parents=True)
-    (spotify / "Local Storage").mkdir(parents=True)
+    original_env_path = junk._env_path
+    monkeypatch.setattr(junk, "_env_path", lambda var: appdata if var == "APPDATA" else original_env_path(var))
 
-    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("TMP", str(tmp_path / "temp"))
     monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
     monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
 
     cats = {c.key: c for c in junk.junk_categories(Config())}
 
     # Verification 1: Category exists
+    assert "vscode-cache" in cats
+
+    roots = {str(r) for r in cats["vscode-cache"].roots}
+
+    # Verification 2: Specific caches are included
+    assert str(code_dir / "Cache") in roots
+    assert str(code_dir / "CachedData") in roots
+    assert str(code_dir / "Code Cache") in roots
+    assert str(code_dir / "GPUCache") in roots
+
+    # Verification 3: Settings/extensions folder is never touched
+    assert not any(Path(r).name == "User" for r in roots)
+
+
+def test_spotify_cache_category_covers_cache_dirs_and_safeguards_session(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    spotify = local / "Spotify"
+    (spotify / "Storage").mkdir(parents=True)
+    (spotify / "Data").mkdir(parents=True)
+    (spotify / "Local Storage").mkdir(parents=True)
+
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("TMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    cats = {c.key: c for c in junk.junk_categories(Config())}
     assert "spotify-cache" in cats
 
     roots = {str(r) for r in cats["spotify-cache"].roots}
-
-    # Verification 2: Spotify cache directories are included
     assert str(spotify / "Storage") in roots
     assert str(spotify / "Data") in roots
-
-    # Verification 3: Login/session data is ignored
     assert str(spotify / "Local Storage") not in roots
+
+
+def test_spotify_cache_category_absent_without_spotify(monkeypatch, tmp_path):
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
+    monkeypatch.setenv("TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("TMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    keys = {c.key for c in junk.junk_categories(Config())}
+    assert "spotify-cache" not in keys
 
 
 def test_installer_app_hint_strips_suffixes():

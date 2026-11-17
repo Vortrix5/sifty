@@ -61,6 +61,27 @@ def summarize_disk(client: OllamaClient, items: list[tuple[str, str]], question:
     )
 
 
+def summarize_checkup(client: OllamaClient, findings: list, anomalies: list) -> str | None:
+    """A short, plain-language read on a checkup + anomalies (metadata only).
+
+    ``findings`` are checkup.Finding objects, ``anomalies`` are anomaly.Anomaly
+    objects. Returns None when the AI is unavailable so the caller can hide the
+    summary rather than show an error.
+    """
+    lines = [f"- {f.label}: {f.summary} [{f.severity}]" for f in findings]
+    lines += [f"- Change noticed: {a.summary} [{a.severity}]" for a in anomalies]
+    if not lines:
+        return None
+    listing = "\n".join(lines)
+    return _safe(
+        client,
+        "Here is the result of a Windows maintenance checkup on this machine:\n"
+        f"{listing}\n\n"
+        "In 2-3 sentences, tell the user what matters most and what to do first. "
+        "Be concrete and calm; don't invent findings that aren't listed.",
+    )
+
+
 def suggest_organization(client: OllamaClient, sample_names: list[str]) -> str | None:
     """Propose a folder scheme for a messy directory from sample filenames."""
     listing = "\n".join(f"- {n}" for n in sample_names[:40])

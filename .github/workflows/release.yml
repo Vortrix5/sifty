@@ -18,8 +18,8 @@ jobs:
     permissions:
       id-token: write       # OIDC token for Trusted Publishing
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Build sdist + wheel
@@ -35,8 +35,8 @@ jobs:
     name: Build Windows exe + installer
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install + PyInstaller

@@ -40,16 +40,33 @@ def parse_upgrade_table(output: str) -> list[Upgrade]:
     def slice_at(line: str, start: int, end: int) -> str:
         return line[start:end].strip()
 
+    def is_row(line: str) -> bool:
+        """True if the line is aligned to the table's columns.
+
+        winget prints trailing prose after the table ("37 upgrades
+        available.", or a second "require explicit targeting" section).
+        Those lines are not padded to the column offsets, so a real row has
+        to reach the Version column, have padding before the Id column, and
+        carry a package id (never spaces) under Id.
+        """
+        if len(line) <= cols["version"]:
+            return False
+        if not line[cols["id"] - 1].isspace():
+            return False
+        return " " not in line[cols["id"]:cols["version"]].strip()
+
     upgrades: list[Upgrade] = []
     for line in lines[header_idx + 1:]:
         if not line.strip() or set(line.strip()) <= {"-"}:
             continue
-        if len(line) <= cols["id"]:
+        if not is_row(line):
             continue
         name = slice_at(line, cols["name"], cols["id"])
         ident = slice_at(line, cols["id"], cols["version"])
         current = slice_at(line, cols["version"], cols["available"])
         available = slice_at(line, cols["available"], avail_end)
+        if name == "Name" and ident == "Id":
+            continue  # repeated header of a second table section
         if name and ident:
             upgrades.append(Upgrade(name, ident, current, available))
     return upgrades

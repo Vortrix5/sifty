@@ -15,6 +15,7 @@ from ..infra.logging import get_logger, log_file, setup_logging
 from ..windows.admin import is_admin, relaunch_as_admin
 from . import output
 from .commands import (
+    agent,
     ai_group,
     apps,
     cleanup,
@@ -53,6 +54,7 @@ app.add_typer(updates.app, name="update")
 app.add_typer(organize.app, name="organize")
 app.add_typer(watch.app, name="watch")
 app.add_typer(ai_group.app, name="ai")
+app.add_typer(agent.app, name="agent")
 app.add_typer(config_cmd.app, name="config")
 
 
@@ -223,6 +225,7 @@ def selfupdate_cmd(
 @app.command("doctor")
 def doctor_cmd() -> None:
     """Report environment readiness: admin, winget, Ollama, disk, reboot state."""
+    import platform
     import winreg
 
     import psutil
@@ -235,6 +238,9 @@ def doctor_cmd() -> None:
     has_winget = winget.available()
     client = OllamaClient.from_config()
     ollama_up = client.is_available()
+    py_version = platform.python_version()
+    win_release, win_build, _sp, _extra = platform.win32_ver()
+    win_version = f"{win_release} ({win_build})" if win_release else platform.version()
 
     # Free space on the system volume.
     sys_root = os.environ.get("SystemDrive", "C:") + "\\"
@@ -274,6 +280,8 @@ def doctor_cmd() -> None:
 
     if output.json_enabled():
         output.emit({
+            "python_version": py_version,
+            "windows_version": win_version,
             "administrator": admin,
             "winget": has_winget,
             "disk_free_gb": round(disk_free_gb, 2),
@@ -289,6 +297,8 @@ def doctor_cmd() -> None:
     def _ok(v: bool) -> str:
         return "[green]yes[/green]" if v else "[red]no[/red]"
 
+    console.print(f"Python:           {py_version}")
+    console.print(f"Windows:          {win_version}")
     console.print(f"Administrator:    {'[green]yes[/green]' if admin else '[yellow]no[/yellow] (some tasks need it)'}")
     console.print(f"winget:           {'[green]available[/green]' if has_winget else '[red]missing[/red]'}")
 

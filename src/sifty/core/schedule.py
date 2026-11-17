@@ -13,7 +13,7 @@ import sys
 from ..infra.config import app_data_dir
 from ..windows import scheduler
 
-__all__ = ["sifty_command", "watch_command", "add", "remove", "list_schedules"]
+__all__ = ["sifty_command", "watch_command", "agent_command", "add", "remove", "list_schedules"]
 
 
 def _file():
@@ -45,6 +45,16 @@ def sifty_command(profile: str) -> str:
 def watch_command(threshold_gb: int) -> str:
     """The command a scheduled task runs to check free space and toast."""
     return f'"{sys.executable}" -m sifty watch check --threshold {threshold_gb}'
+
+
+def agent_command() -> str:
+    """The command a scheduled task runs for a proactive maintenance pass.
+
+    No --apply: whether it auto-cleans is driven by the [agent].auto_fix config,
+    so the task itself is inert-by-default and can't be made destructive by the
+    schedule alone.
+    """
+    return f'"{sys.executable}" -m sifty agent run --background'
 
 
 def add(name: str, profile: str, command: str, sc: str, day: str, time: str) -> tuple[bool, str]:

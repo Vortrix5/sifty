@@ -15,7 +15,8 @@ from ..console import human_size
 
 
 def build(*, include_junk: bool = True, include_volumes: bool = True,
-          include_history: bool = True, include_preferences: bool = True) -> str:
+          include_history: bool = True, include_preferences: bool = True,
+          include_anomalies: bool = True) -> str:
     """Return a Markdown-formatted system context string for injection into prompts."""
     sections: list[str] = []
 
@@ -26,6 +27,11 @@ def build(*, include_junk: bool = True, include_volumes: bool = True,
 
     if include_junk:
         section = _junk_section()
+        if section:
+            sections.append(section)
+
+    if include_anomalies:
+        section = _anomaly_section()
         if section:
             sections.append(section)
 
@@ -94,6 +100,21 @@ def _history_section() -> str:
     ]
     for r in runs[:3]:
         lines.append(f"- {r.ts[:10]}: {r.action} - {human_size(r.bytes_freed)} freed")
+    return "\n".join(lines)
+
+
+def _anomaly_section() -> str:
+    """Recent notable changes (disk drops, junk growth, new startup entries)."""
+    try:
+        from ..core import anomaly
+        found = anomaly.detect()
+    except Exception:
+        return ""
+    if not found:
+        return ""
+    lines = ["**Recent changes noticed:**"]
+    for a in found:
+        lines.append(f"- {a.summary}")
     return "\n".join(lines)
 
 

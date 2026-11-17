@@ -10,7 +10,8 @@ from __future__ import annotations
 from ..windows import services_api
 from .models import ServiceInfo
 
-__all__ = ["ALLOWLIST", "list_services", "can_manage", "set_start_type"]
+__all__ = ["ALLOWLIST", "list_services", "can_manage", "is_present",
+           "set_start_type"]
 
 # Well-known optional services that are commonly safe to disable on a personal
 # PC. (name, label, description - the description notes any trade-off.)
@@ -59,6 +60,11 @@ def list_services() -> list[ServiceInfo]:
 
 def can_manage(name: str) -> bool:
     return name in _ALLOWED_NAMES and name not in CRITICAL_DENYLIST
+
+
+def is_present(name: str) -> bool:
+    """True if the service is actually installed on this machine."""
+    return services_api.get_start_type(name) is not None
 
 
 def set_start_type(name: str, mode: str) -> bool:

@@ -15,6 +15,8 @@ except ImportError:  # pragma: no cover - non-Windows
 
 logger = logging.getLogger("sifty.windows")
 
+ERROR_SERVICE_DOES_NOT_EXIST = 1060
+
 # Service start-type codes → friendly names.
 _START_TYPES = {2: "auto", 3: "manual", 4: "disabled", 0: "boot", 1: "system"}
 _MODE_CODES = {"auto": 2, "manual": 3, "disabled": 4}
@@ -63,6 +65,9 @@ def set_start_type(name: str, mode: str) -> bool:
                 win32service.CloseServiceHandle(svc)
         finally:
             win32service.CloseServiceHandle(scm)
-    except Exception:
-        logger.exception("Failed to set start type for %s (admin required?)", name)
+    except Exception as exc:
+        if getattr(exc, "winerror", None) == ERROR_SERVICE_DOES_NOT_EXIST:
+            logger.debug("Service %s is not installed on this system", name)
+        else:
+            logger.exception("Failed to set start type for %s (admin required?)", name)
         return False

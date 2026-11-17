@@ -180,6 +180,21 @@ def _record_skip(tool: Tool, args: dict) -> None:
         logger.debug("skip not recorded", exc_info=True)
 
 
+def build_system_prompt() -> str:
+    """The agent's system prompt plus a metadata-only snapshot of this machine."""
+    from . import context as ai_context
+    from .advisor import SYSTEM_PROMPT
+
+    base = SYSTEM_PROMPT + TOOL_USE_NOTE
+    ctx = ai_context.build()
+    return f"{base}\n\n{ctx}" if ctx else base
+
+
+def read_only_tools(tools: list[Tool] | None = None) -> list[Tool]:
+    """Only the tools with no side effects (risk ``read``)."""
+    return [t for t in (tools if tools is not None else TOOLS) if t.risk == "read"]
+
+
 # ---------------------------------------------------------------------------
 # Agent loop
 # ---------------------------------------------------------------------------

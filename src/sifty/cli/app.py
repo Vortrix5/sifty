@@ -21,6 +21,7 @@ from .commands import (
     cleanup,
     config_cmd,
     disk,
+    do,
     junk,
     optimize,
     organize,
@@ -56,6 +57,7 @@ app.add_typer(watch.app, name="watch")
 app.add_typer(ai_group.app, name="ai")
 app.add_typer(agent.app, name="agent")
 app.add_typer(config_cmd.app, name="config")
+app.command("do")(do.do_cmd)
 
 
 @app.callback()

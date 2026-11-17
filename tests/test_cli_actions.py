@@ -128,6 +128,7 @@ def test_purge_clean_dry(monkeypatch, tmp_path):
     assert "node_modules" in result.stdout
     assert str(tmp_path / "dist") not in result.stdout
     assert str(tmp_path / "node_modules") not in result.stdout
+    assert "Found" not in result.stdout  # the summary table already carries the total
 
 
 def test_purge_clean_details(monkeypatch, tmp_path):
@@ -138,8 +139,10 @@ def test_purge_clean_details(monkeypatch, tmp_path):
     monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: artifacts)
     result = runner.invoke(app, ["purge", "clean", str(tmp_path), "--details"])
     assert result.exit_code == 0
-    assert str(tmp_path / "dist") in result.stdout
-    assert str(tmp_path / "node_modules") in result.stdout
+    # Per-directory table (paths may wrap at the test runner's width).
+    assert "Path" in result.stdout
+    assert "2 directories" in result.stdout
+    assert "Directories" not in result.stdout
 
 
 def test_purge_clean_apply(monkeypatch, tmp_path):

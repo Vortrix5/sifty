@@ -138,3 +138,11 @@ def test_purge_reuses_scan_sizes(tmp_path, monkeypatch):
     assert result.items == 1
     assert result.bytes_freed == 1234
     assert result.trashed == [tmp_path / "dist"]
+
+
+def test_purge_reports_progress(tmp_path, monkeypatch):
+    arts = [purge.ArtifactScan(tmp_path / f"d{i}", 10, "dist") for i in range(3)]
+    monkeypatch.setattr("sifty.core.purge.trash", lambda p, **kw: True)
+    seen = []
+    purge.purge_artifacts(arts, dry_run=False, on_progress=lambda d, t: seen.append((d, t)))
+    assert seen == [(1, 3), (2, 3), (3, 3)]

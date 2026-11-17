@@ -29,12 +29,64 @@ def _local_appdata() -> Path | None:
     return _env_path("LOCALAPPDATA")
 
 
+def _roaming_appdata() -> Path | None:
+    return _env_path("APPDATA")
+
+
+_CHROMIUM_CACHE_DIRS = ("Cache", "Code Cache", "GPUCache")
+
+
+def _is_chromium_profile(path: Path) -> bool:
+    return path.name == "Default" or path.name.startswith("Profile")
+
+
+def _chromium_profile_caches(user_data: Path, *, root_is_profile: bool = False) -> list[Path]:
+    """Cache dirs of every profile under a Chromium ``User Data`` dir.
+
+    With ``root_is_profile`` the dir itself is also treated as a profile, which
+    is how Opera lays out its default profile.
+    """
+    if not user_data.is_dir():
+        return []
+    try:
+        profiles = [p for p in user_data.iterdir() if p.is_dir() and _is_chromium_profile(p)]
+    except OSError:
+        return []
+    if root_is_profile:
+        profiles.insert(0, user_data)
+    return [
+        profile / sub for profile in profiles for sub in _CHROMIUM_CACHE_DIRS
+        if (profile / sub).is_dir()
+    ]
+
+
+def _opera_cache_roots(local: Path) -> list[Path]:
+    """Opera and Opera GX cache dirs.
+
+    Opera keeps its profile under Roaming but moves the disk cache to Local,
+    and the ``Opera Stable`` folder is itself the default profile (newer builds
+    may also use ``Default``/``Profile N`` subfolders). Look in both places;
+    only cache-named dirs are ever returned.
+    """
+    bases = [local, _roaming_appdata()]
+    roots: list[Path] = []
+    for base in bases:
+        if base is None:
+            continue
+        for channel in ("Opera Stable", "Opera GX Stable"):
+            for cand in _chromium_profile_caches(base / "Opera Software" / channel, root_is_profile=True):
+                if cand not in roots:
+                    roots.append(cand)
+    return roots
+
+
 def _browser_cache_roots(local: Path) -> list[Path]:
     """Cache directories across ALL profiles of the installed browsers.
 
     Chromium-family browsers keep one cache per profile under ``User Data``
-    (Default, Profile 1, …); Firefox keeps ``cache2`` per profile. Only cache
-    dirs are returned - never cookies, history, or passwords.
+    (Default, Profile 1, …); Opera splits its profile between Roaming and Local;
+    Firefox keeps ``cache2`` per profile. Only cache dirs are returned - never
+    cookies, history, or passwords.
     """
     roots: list[Path] = []
 
@@ -45,20 +97,9 @@ def _browser_cache_roots(local: Path) -> list[Path]:
         local / "Vivaldi" / "User Data",
     ]
     for user_data in chromium_user_data:
-        if not user_data.is_dir():
-            continue
-        try:
-            profiles = [
-                p for p in user_data.iterdir()
-                if p.is_dir() and (p.name == "Default" or p.name.startswith("Profile"))
-            ]
-        except OSError:
-            continue
-        for profile in profiles:
-            for sub in ("Cache", "Code Cache", "GPUCache"):
-                cand = profile / sub
-                if cand.is_dir():
-                    roots.append(cand)
+        roots.extend(_chromium_profile_caches(user_data))
+
+    roots.extend(_opera_cache_roots(local))
 
     firefox_profiles = local / "Mozilla" / "Firefox" / "Profiles"
     if firefox_profiles.is_dir():
@@ -154,7 +195,7 @@ def junk_categories(config=None) -> list[JunkCategory]:
         cats.append(
             JunkCategory(
                 "browser-cache", "Browser caches",
-                "On-disk caches for every Chrome/Edge/Brave/Vivaldi profile and "
+                "On-disk caches for every Chrome/Edge/Brave/Vivaldi/Opera profile and "
                 "Firefox (never cookies, history, or passwords).",
                 _browser_cache_roots(local),
             )

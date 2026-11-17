@@ -80,6 +80,39 @@ def test_browser_cache_covers_all_profiles_and_firefox(monkeypatch, tmp_path):
     assert str(chrome / "System Profile" / "Cache") not in roots
 
 
+def test_browser_cache_covers_opera_local_and_roaming(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    roaming = tmp_path / "roaming"
+    # Disk cache lives in Local, directly under the Stable folder.
+    opera_local = local / "Opera Software" / "Opera Stable"
+    (opera_local / "Cache").mkdir(parents=True)
+    # Code/GPU caches sit in the Roaming profile, which is the Stable folder itself.
+    opera_roaming = roaming / "Opera Software" / "Opera Stable"
+    (opera_roaming / "Code Cache").mkdir(parents=True)
+    (opera_roaming / "GPUCache").mkdir(parents=True)
+    # Profile data that must never be swept.
+    (opera_roaming / "Local Storage").mkdir(parents=True)
+    (opera_roaming / "Network").mkdir(parents=True)
+    # Opera GX with an extra profile.
+    gx = local / "Opera Software" / "Opera GX Stable"
+    (gx / "Cache").mkdir(parents=True)
+    (gx / "Profile 1" / "Cache").mkdir(parents=True)
+
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("APPDATA", str(roaming))
+    monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: tmp_path / "home"))
+
+    cats = {c.key: c for c in junk.junk_categories(Config())}
+    roots = {str(r) for r in cats["browser-cache"].roots}
+    assert str(opera_local / "Cache") in roots
+    assert str(opera_roaming / "Code Cache") in roots
+    assert str(opera_roaming / "GPUCache") in roots
+    assert str(gx / "Cache") in roots
+    assert str(gx / "Profile 1" / "Cache") in roots
+    assert all(Path(r).name in ("Cache", "Code Cache", "GPUCache", "cache2") for r in roots)
+
+
 def test_crash_dump_categories_present(monkeypatch, tmp_path):
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
     monkeypatch.setenv("SystemRoot", str(tmp_path / "win"))

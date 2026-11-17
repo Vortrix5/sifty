@@ -1,4 +1,4 @@
-"""`sifty startup` — list and reversibly enable/disable startup programs."""
+"""`sifty startup` - list and reversibly enable/disable startup programs."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def list_cmd() -> None:
             for e in entries
         ])
         return
-    table = Table(title=f"Startup programs ({len(entries)})")
+    table = Table(title=f"Startup programs ({len(entries):,})")
     table.add_column("Name")
     table.add_column("State")
     table.add_column("Origin", style="dim")
@@ -41,7 +41,7 @@ def disable_cmd(
     if startup.set_enabled(name, False):
         success(f"Disabled '{name}'. Re-enable with: sifty startup enable \"{name}\"")
     else:
-        error(f"Could not disable '{name}' — not found, already disabled, or HKLM needs --admin.")
+        error(f"Could not disable '{name}' - not found, already disabled, or HKLM needs --admin.")
         raise typer.Exit(1)
 
 
@@ -53,5 +53,5 @@ def enable_cmd(
     if startup.set_enabled(name, True):
         success(f"Enabled '{name}'.")
     else:
-        error(f"Could not enable '{name}' — not found, already enabled, or HKLM needs --admin.")
+        error(f"Could not enable '{name}' - not found, already enabled, or HKLM needs --admin.")
         raise typer.Exit(1)

@@ -37,6 +37,6 @@ def test_default_template_is_valid_commented_toml():
 
     template = cfg.default_template()
     # Every default appears (commented); section headers stay real so the user
-    # can just uncomment a key. Parsing yields empty sections — no overrides.
+    # can just uncomment a key. Parsing yields empty sections - no overrides.
     assert "[ai]" in template and "# model =" in template
     assert tomllib.loads(template) == {section: {} for section in cfg.DEFAULTS}

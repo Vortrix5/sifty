@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned versions current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "(chore)"
+
+  # Keep Python dependencies (pyproject.toml) current.
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "(chore)"

@@ -117,9 +117,11 @@
       }).then(function () { return wait(350); });
     }
 
-    /* kind === "out": append the block instantly, like real output. */
-    var node = step.firstElementChild.cloneNode(true);
-    term.appendChild(node);
+    /* kind === "out": append the block instantly, like real output. Some
+       steps carry a desktop and a mobile variant; CSS shows the right one. */
+    Array.prototype.forEach.call(step.children, function (child) {
+      term.appendChild(child.cloneNode(true));
+    });
     scrollDown();
     return wait(140);
   }

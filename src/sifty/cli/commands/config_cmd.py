@@ -1,4 +1,4 @@
-"""`sifty config` — view and edit the config without hunting through AppData."""
+"""`sifty config` - view and edit the config without hunting through AppData."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def edit_cmd() -> None:
     if not path.exists():
         path.write_text(default_template(), encoding="utf-8")
         console.print(f"[dim]Created a commented template at {path}[/dim]")
-    os.startfile(str(path))  # noqa: S606 — opening the user's own config file
+    os.startfile(str(path))  # noqa: S606 - opening the user's own config file
 
 
 @app.command("get")
@@ -123,7 +123,7 @@ def reset_cmd(
     section, _, name = key.partition(".")
     overrides = read_user_config()
     if name not in overrides.get(section, {}):
-        console.print(f"'{key}' is not overridden — already at its default.")
+        console.print(f"'{key}' is not overridden - already at its default.")
         return
     del overrides[section][name]
     if not overrides[section]:

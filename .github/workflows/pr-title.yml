@@ -1,0 +1,26 @@
+name: PR title
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-title:
+    # Bots (e.g. Dependabot) don't follow the human title convention.
+    if: ${{ !endsWith(github.actor, '[bot]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the PR title follows the Sifty convention
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "PR title: $TITLE"
+          if echo "$TITLE" | grep -qE '^\((feat|fix|hotfix|enhance|refactor|docs|test|chore)\) .+'; then
+            echo "Title matches the convention."
+          else
+            echo "::error::PR title must start with a type tag, e.g. '(feat) add network module'. Allowed tags: feat, fix, hotfix, enhance, refactor, docs, test, chore."
+            exit 1
+          fi

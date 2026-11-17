@@ -68,7 +68,7 @@ def find_duplicates(
 
     With ``count_hardlinks_once=True`` (default) NTFS hardlinks that share
     the same inode are represented by a single path so they are never
-    reported as wasted space — they occupy the same disk block.
+    reported as wasted space - they occupy the same disk block.
     Hashing of size-matched candidates is parallelised with a thread pool.
     """
     by_size: dict[int, list[Path]] = defaultdict(list)
@@ -86,7 +86,7 @@ def find_duplicates(
             if count_hardlinks_once:
                 inode_key = (st.st_dev, st.st_ino)
                 if inode_key in seen_inodes:
-                    continue  # hardlink to an already-seen file — skip
+                    continue  # hardlink to an already-seen file - skip
                 seen_inodes.add(inode_key)
             by_size[st.st_size].append(fp)
 
@@ -95,7 +95,7 @@ def find_duplicates(
     if not candidates:
         return {}
 
-    # Hash candidates in parallel — I/O-bound, threads are the right tool.
+    # Hash candidates in parallel - I/O-bound, threads are the right tool.
     with ThreadPoolExecutor(max_workers=_MAX_HASH_WORKERS) as pool:
         hashes = list(pool.map(_hash_file, candidates))
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from sifty.ai import policy as ai_policy
 from sifty.ai import tools as ai_tools
 from sifty.ai.agent import (
     FallbackEvent,
@@ -9,6 +10,7 @@ from sifty.ai.agent import (
     ToolCallEvent,
     ToolResultEvent,
     _needs_confirm,
+    _resolve_action,
     current_autonomy,
     run,
     set_autonomy,
@@ -84,7 +86,7 @@ def _fake_client_tool_then_answer(monkeypatch, tool_name, args, answer):
 
 
 # ---------------------------------------------------------------------------
-# Agent loop — fallback (model ignores tools)
+# Agent loop - fallback (model ignores tools)
 # ---------------------------------------------------------------------------
 
 def test_plain_reply_is_fallback(monkeypatch):
@@ -97,7 +99,7 @@ def test_plain_reply_is_fallback(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Agent loop — single tool call auto-run (read risk)
+# Agent loop - single tool call auto-run (read risk)
 # ---------------------------------------------------------------------------
 
 def test_read_tool_runs_without_confirm(monkeypatch):
@@ -121,7 +123,7 @@ def test_read_tool_runs_without_confirm(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Agent loop — high-risk tool with autonomy=ask, confirm=deny
+# Agent loop - high-risk tool with autonomy=ask, confirm=deny
 # ---------------------------------------------------------------------------
 
 def test_high_tool_skipped_when_denied(monkeypatch):
@@ -139,7 +141,7 @@ def test_high_tool_skipped_when_denied(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Agent loop — high-risk tool with autonomy=full_auto runs without confirm
+# Agent loop - high-risk tool with autonomy=full_auto runs without confirm
 # ---------------------------------------------------------------------------
 
 def test_high_tool_runs_in_full_auto(monkeypatch):
@@ -159,7 +161,7 @@ def test_high_tool_runs_in_full_auto(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Agent loop — Ollama unavailable
+# Agent loop - Ollama unavailable
 # ---------------------------------------------------------------------------
 
 def test_ollama_unavailable_yields_final(monkeypatch):
@@ -231,3 +233,78 @@ def test_autonomy_override_roundtrip(tmp_path, monkeypatch):
     assert current_autonomy() == "full_auto"
     assert set_autonomy("bogus") is False           # invalid rejected
     assert current_autonomy() == "full_auto"        # unchanged
+
+
+def test_set_autonomy_preserves_tool_policies(tmp_path, monkeypatch):
+    """Regression: set_autonomy must not wipe per-tool policies in the shared file."""
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+    assert ai_policy.set_policy("clean_junk", "never") is True
+    assert set_autonomy("full_auto") is True
+    assert ai_policy.get_policy("clean_junk") == "never"
+    assert current_autonomy() == "full_auto"
+
+
+# ---------------------------------------------------------------------------
+# Per-tool policy resolution
+# ---------------------------------------------------------------------------
+
+def test_resolve_action_default_matches_global():
+    tool = _make_tool("t", risk="high")
+    assert _resolve_action(tool, "ask", "default") == "confirm"
+    assert _resolve_action(tool, "full_auto", "default") == "run"
+
+
+def test_resolve_action_auto_overrides_ask():
+    assert _resolve_action(_make_tool("t", risk="high"), "ask", "auto") == "run"
+
+
+def test_resolve_action_ask_overrides_full_auto():
+    assert _resolve_action(_make_tool("t", risk="high"), "full_auto", "ask") == "confirm"
+
+
+def test_resolve_action_never_skips():
+    assert _resolve_action(_make_tool("t", risk="read"), "full_auto", "never") == "skip"
+
+
+def test_never_policy_skips_and_handler_not_called(tmp_path, monkeypatch):
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+    # Name the fake tool after a real registered tool so set_policy accepts it.
+    assert ai_policy.set_policy("clean_junk", "never") is True
+    ran = []
+    tool = _make_tool("clean_junk", risk="high")
+    tool.handler = lambda args: ran.append(1) or "deleted!"
+    client = _fake_client_tool_then_answer(monkeypatch, "clean_junk", {}, "Understood.")
+
+    events = list(run(client, [{"role": "user", "content": "clean"}],
+                      autonomy="full_auto", tools=[tool]))
+
+    assert ran == []  # handler never invoked
+    result_ev = next(e for e in events if isinstance(e, ToolResultEvent))
+    assert result_ev.skipped is True
+    assert "never" in result_ev.result
+
+
+def test_read_tool_result_cached_within_run(monkeypatch):
+    calls = [0]
+
+    def handler(args):
+        calls[0] += 1
+        return ToolResult(summary=f"call {calls[0]}")
+
+    tool = _make_tool("scan", risk="read")
+    tool.handler = handler
+
+    # Client asks for the same read tool twice, then answers.
+    client = OllamaClient(host="http://localhost:11434", model="test", timeout=5.0)
+    seq = [0]
+
+    def fake_chat_once(messages, tools=None):
+        if seq[0] < 2:
+            seq[0] += 1
+            return {"role": "assistant", "content": "",
+                    "tool_calls": [{"function": {"name": "scan", "arguments": {}}}]}
+        return {"role": "assistant", "content": "done"}
+
+    monkeypatch.setattr(client, "chat_once", fake_chat_once)
+    list(run(client, [{"role": "user", "content": "scan"}], autonomy="full_auto", tools=[tool]))
+    assert calls[0] == 1  # handler ran once; second call served from cache

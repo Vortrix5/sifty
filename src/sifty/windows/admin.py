@@ -70,11 +70,11 @@ def relaunch_as_admin() -> bool:
     """Relaunch the current command elevated via UAC.
 
     Elevated processes get a fresh console, and Windows hands them the *legacy*
-    console host — which would lose the Windows Terminal styling. So when
+    console host - which would lose the Windows Terminal styling. So when
     Windows Terminal is present we relaunch *through* ``wt.exe`` to keep the same
     look; otherwise we relaunch the command directly.
 
-    Returns True if an elevated process was launched — the caller should then
+    Returns True if an elevated process was launched - the caller should then
     exit. Returns False on non-Windows, when already admin, or when the user
     dismisses the UAC prompt.
     """

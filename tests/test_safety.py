@@ -1,4 +1,4 @@
-"""Tests for the safety guardrails — the backstop against destroying the system.
+"""Tests for the safety guardrails - the backstop against destroying the system.
 
 These run on any OS: they exercise the path logic directly and only mock the
 actual Recycle Bin call.

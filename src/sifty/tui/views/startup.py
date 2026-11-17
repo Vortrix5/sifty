@@ -19,7 +19,7 @@ class StartupView(BaseView):
     def compose(self) -> ComposeResult:
         yield Static("Startup programs", classes="title")
         yield Static(
-            "Highlight a row, then Enable/Disable (reversible — disabled entries "
+            "Highlight a row, then Enable/Disable (reversible - disabled entries "
             "stay in the list). HKLM entries need administrator rights (F2).",
             classes="subtle",
         )
@@ -99,6 +99,6 @@ class StartupView(BaseView):
             self.load()
         else:
             self.app.notify(
-                f"Couldn't change '{name}' — HKLM entries need admin (F2).",
+                f"Couldn't change '{name}' - HKLM entries need admin (F2).",
                 severity="warning", title="Startup",
             )

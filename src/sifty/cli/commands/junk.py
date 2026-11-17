@@ -1,4 +1,4 @@
-"""`sifty junk` — scan and clean junk files."""
+"""`sifty junk` - scan and clean junk files."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def clean_cmd(
 
     preview = junk.clean(only=only, dry_run=True, extra_protected=extra_protected)
     if preview.items == 0:
-        success("Nothing to clean — you're already tidy.")
+        success("Nothing to clean - you're already tidy.")
         return
 
     console.print(
@@ -70,7 +70,7 @@ def clean_cmd(
         f"[bold]{human_size(preview.bytes_freed)}[/bold]."
     )
     if not apply:
-        console.print("[dim]Dry-run — nothing was deleted. Re-run with --apply to remove.[/dim]")
+        console.print("[dim]Dry-run - nothing was deleted. Re-run with --apply to remove.[/dim]")
         return
 
     if not confirm(f"Move {preview.items:,} items ({human_size(preview.bytes_freed)}) to the Recycle Bin?", assume_yes=yes):
@@ -84,4 +84,4 @@ def clean_cmd(
     )
     success(f"Sent {result.items:,} items ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:
-        warn(f"{len(result.skipped)} item(s) skipped (in use or protected).")
+        warn(f"{len(result.skipped):,} item(s) skipped (in use or protected).")

@@ -6,7 +6,7 @@ returns ``False`` and callers fall back to non-AI behaviour instead of crashing.
 Chat is **streamed**. A local model has to be loaded into RAM/VRAM on its first
 request (a cold start that can take many seconds) and then emits tokens slowly.
 A single blocking request with one wall-clock budget covers *all* of that at
-once, so a model that is working — just slow — trips the timeout and the user
+once, so a model that is working - just slow - trips the timeout and the user
 gets nothing. Streaming turns the timeout into "time between tokens" instead of
 "time for the whole answer", so a slow-but-alive model keeps going and callers
 can show progress as it arrives.
@@ -125,7 +125,7 @@ class OllamaClient:
                         break
         except httpx.TimeoutException as exc:
             raise OllamaUnavailable(
-                "timed out — the model may still be loading; try again"
+                "timed out - the model may still be loading; try again"
             ) from exc
         except httpx.HTTPError as exc:
             raise OllamaUnavailable(str(exc)) from exc
@@ -170,7 +170,7 @@ class OllamaClient:
             return data.get("message", {"role": "assistant", "content": ""})
         except httpx.TimeoutException as exc:
             raise OllamaUnavailable(
-                "timed out — the model may still be loading; try again"
+                "timed out - the model may still be loading; try again"
             ) from exc
         except httpx.HTTPError as exc:
             raise OllamaUnavailable(str(exc)) from exc

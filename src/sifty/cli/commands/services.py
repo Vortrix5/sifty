@@ -1,4 +1,4 @@
-"""`sifty services` — view and toggle a curated set of optional Windows services."""
+"""`sifty services` - view and toggle a curated set of optional Windows services."""
 
 from __future__ import annotations
 
@@ -44,11 +44,14 @@ def _apply(name: str, mode: str, action: str) -> None:
     if not services.can_manage(name):
         error(f"'{name}' is not a manageable service (not on Sifty's curated allowlist).")
         raise typer.Exit(1)
+    if not services.is_present(name):
+        error(f"'{name}' is not installed on this PC - nothing to change.")
+        raise typer.Exit(1)
     if services.set_start_type(name, mode):
         history.record_clean(action, name, 0, 0, [])
         success(f"Set '{name}' start type to {mode}.")
     else:
-        error(f"Could not change '{name}' — this needs Administrator rights (try `sifty --admin …`).")
+        error(f"Could not change '{name}' - this needs Administrator rights (try `sifty --admin …`).")
         raise typer.Exit(1)
 
 

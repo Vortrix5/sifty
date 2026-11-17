@@ -8,7 +8,7 @@ sends a confirmed selection to the Recycle Bin through the safety layer.
 
 Matching is deliberately conservative: only exact (normalized) name matches,
 never inside ``Program Files`` / ``Windows``, and never for generic vendor
-names like "Microsoft" — a false positive here would trash live user data.
+names like "Microsoft" - a false positive here would trash live user data.
 Registry traces are covered separately by ``sifty apps orphans`` (read-only by
 policy).
 """
@@ -26,7 +26,7 @@ from .safety import ProtectedPathError, trash
 
 __all__ = ["Leftover", "find_leftovers", "clean_leftovers"]
 
-# Names that are never leftovers no matter what app we're matching — shared
+# Names that are never leftovers no matter what app we're matching - shared
 # vendor/system directories that hold many apps' data.
 _NEVER_MATCH = {
     "microsoft", "windows", "common files", "commonfiles", "packages",
@@ -177,7 +177,7 @@ def clean_leftovers(
 ) -> CleanResult:
     """Send leftover items to the Recycle Bin via the safety layer.
 
-    Each item vouches only for itself (``allow_subtrees=[item]``) — ProgramData
+    Each item vouches only for itself (``allow_subtrees=[item]``) - ProgramData
     entries need that carve-out, but everything else stays protected.
     """
     config = config or load_config()

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to delete all node_modules folders on Windows | Sifty</title>
+  <meta name="description" content="node_modules folders eat gigabytes and Explorer chokes on deleting them. Here is how to delete every node_modules across your projects on Windows safely, in one pass.">
+  <link rel="canonical" href="https://sifty.tech/guides/delete-node-modules-windows.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to delete all node_modules folders on Windows">
+  <meta property="og:description" content="Delete every node_modules across your projects on Windows safely, in one pass, without Explorer choking on long paths.">
+  <meta property="og:url" content="https://sifty.tech/guides/delete-node-modules-windows.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to delete all node_modules folders on Windows",
+    "description": "Delete every node_modules across your projects on Windows safely, in one pass, without Explorer choking on long paths.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/delete-node-modules-windows.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "Delete node_modules on Windows", "item": "https://sifty.tech/guides/delete-node-modules-windows.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>Delete node_modules</span>
+  </nav>
+
+  <h1 class="doc-title">How to delete all node_modules folders on Windows</h1>
+  <p class="doc-lede">
+    Old projects you have not touched in months still hold a full
+    <code>node_modules</code> tree, and they add up to gigabytes. Here is how to
+    clear every one of them across your machine, without Explorer hanging on the
+    delete.
+  </p>
+  <p class="doc-meta">Works on Windows 10 and 11. Recycle Bin only, so it is reversible.</p>
+
+  <div class="prose">
+    <h2>Why node_modules is such a problem</h2>
+    <p>
+      A single <code>node_modules</code> can hold tens of thousands of tiny files
+      nested many levels deep. That is fine while you are working on a project, but
+      most of us have a dozen old repos sitting around, each carrying a few hundred
+      megabytes of dependencies we will never run again. The total is often several
+      gigabytes hiding in folders you forgot about.
+    </p>
+    <p>
+      Deleting them by hand is genuinely painful on Windows. File Explorer counts
+      every file before it deletes anything, so it can sit on "Calculating" for
+      minutes. Worse, deeply nested dependency paths frequently exceed the old
+      260-character path limit, and the delete fails partway through with a
+      "path too long" error.
+    </p>
+
+    <h2>The manual ways (and why they drag)</h2>
+    <p>
+      Inside one project you can usually just run a delete from PowerShell:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> Remove-Item -Recurse -Force .\node_modules</pre>
+    <p>
+      That works for a single folder, but it still hits the long-path limit on some
+      packages, and it does nothing for the other eleven projects scattered across
+      your drive. People reach for tools like <code>npkill</code> or a hand-written
+      script that walks every directory. Those help, but you are now trusting a
+      recursive force-delete to find the right folders and never touch anything
+      else.
+    </p>
+
+    <h2>The one-pass way with Sifty</h2>
+    <p>
+      Sifty has a <code>purge</code> command built for exactly this. It walks down
+      from where you run it, finds every known build and dependency directory, and
+      shows you the total before touching anything:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty purge clean
+<span class="c-d">Scanning for build and dependency artifacts...</span>
+  node_modules   <span class="c-b">4.7 GB</span>   <span class="c-d">across 9 folders</span>
+  dist / build   <span class="c-b">612 MB</span>
+  __pycache__    <span class="c-b">88 MB</span>
+<span class="c-b">Reclaimable: 5.4 GB</span>  <span class="c-d">(dry-run, nothing deleted)</span></pre>
+    <p>
+      That first run is a <strong>dry-run</strong>. Nothing is deleted until you add
+      <code>--apply</code>, and even then it asks before it moves anything:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty purge clean --apply</pre>
+    <p>
+      Everything goes to the Recycle Bin, not a permanent delete, so if you cleared
+      a project you actually needed, <code>sifty undo</code> brings it straight
+      back (you would just reinstall with <code>npm install</code> anyway, but the
+      safety net is there).
+    </p>
+
+    <h2>What purge actually targets</h2>
+    <p>
+      It only removes well-known generated directories, never your source. Out of
+      the box that includes <code>node_modules</code>, <code>.next</code>,
+      <code>.nuxt</code>, <code>.svelte-kit</code>, <code>dist</code>,
+      <code>build</code>, <code>out</code>, <code>target</code> (Rust and Java),
+      <code>.gradle</code>, <code>__pycache__</code>, <code>.pytest_cache</code>,
+      <code>.mypy_cache</code>, <code>.tox</code>, <code>bin</code> and
+      <code>obj</code> (.NET), <code>.dart_tool</code>, <code>vendor</code> and a
+      handful of cache folders. When it matches one of these, it treats the whole
+      directory as a single unit and does not waste time descending into it.
+    </p>
+    <div class="note">
+      <strong>Tip:</strong> have a generated folder Sifty does not know about? Add
+      it once in your config with <code>purge.extra_patterns</code> and it will be
+      picked up on every future run.
+    </div>
+
+    <h2>A safe routine</h2>
+    <p>
+      Run <code>sifty purge clean</code> from the parent folder that holds your
+      repos (something like <code>C:\Users\you\code</code>), read the preview, then
+      re-run with <code>--apply</code> when the numbers look right. Do it once a
+      month and those abandoned dependency trees never pile up again.
+    </p>
+  </div>
+
+  <section class="cta">
+    <h2>Clear them in one command</h2>
+    <p>Free, open source, dry-run by default. Install Sifty and run the preview first.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="shrink-wsl2-vhdx.html">Shrink a bloated WSL2 disk<span class="r-desc">Get back the space your Linux containers refuse to release.</span></a></li>
+      <li><a href="what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">The full tour of junk Windows accumulates.</span></a></li>
+      <li><a href="find-duplicate-files-windows.html">Find duplicate files on Windows<span class="r-desc">Hash-based, hardlink-aware, free.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

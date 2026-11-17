@@ -68,7 +68,7 @@ def test_undo_last_restores_files_and_removes_empty_folders(tmp_path):
 def test_undo_skips_files_changed_since(tmp_path):
     (tmp_path / "a.png").write_text("photo")
     organize.apply_moves(organize.plan_organization(tmp_path, "type"))
-    # Something new took the original spot — undo must not clobber it.
+    # Something new took the original spot - undo must not clobber it.
     (tmp_path / "a.png").write_text("newer file")
 
     restored, failed = organize.undo_last()

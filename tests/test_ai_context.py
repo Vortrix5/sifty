@@ -50,9 +50,27 @@ def test_context_includes_history(monkeypatch, temp_appdata):
     fake_run = Run(1, "2026-05-01T10:00:00", "junk", "temp", 500_000, 12, True, 0)
     monkeypatch.setattr(history, "recent_runs", lambda n: [fake_run])
     monkeypatch.setattr(history, "summary", lambda: {"runs": 1, "bytes_freed": 500_000, "items": 12})
-    ctx = ai_context.build(include_junk=False, include_volumes=False)
+    ctx = ai_context.build(include_junk=False, include_volumes=False, include_preferences=False)
     assert "2026-05-01" in ctx
     assert "junk" in ctx
+
+
+def test_context_includes_preferences(monkeypatch, temp_appdata):
+    from sifty.core import ai_memory
+    prefs = ai_memory.Preferences(always_clean=["browser-cache"], avoided_tools=["uninstall_app"])
+    monkeypatch.setattr(ai_memory, "learned_preferences", lambda *a, **k: prefs)
+    ctx = ai_context.build(include_junk=False, include_volumes=False, include_history=False)
+    assert "browser-cache" in ctx
+    assert "uninstall_app" in ctx
+
+
+def test_context_preferences_degrade(monkeypatch, temp_appdata):
+    from sifty.core import ai_memory
+    monkeypatch.setattr(ai_memory, "learned_preferences",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+    # Must not raise even if the preferences lookup fails.
+    ctx = ai_context.build(include_junk=False, include_volumes=False, include_history=False)
+    assert isinstance(ctx, str)
 
 
 # ---------------------------------------------------------------------------

@@ -87,6 +87,12 @@ class ServicesView(BaseView):
         if svc is None:
             self._status("No service selected.")
             return
+        if not svc.present:
+            self.app.notify(
+                f"'{svc.label}' isn't installed on this PC - nothing to change.",
+                severity="warning", title="Services",
+            )
+            return
         mode = "disabled" if action == "disable" else "manual"
         ok = await self.app.push_screen_wait(
             ConfirmModal(
@@ -111,6 +117,6 @@ class ServicesView(BaseView):
             self.load()
         else:
             self.app.notify(
-                f"Couldn't change '{name}' — needs administrator rights (F2).",
+                f"Couldn't change '{name}' - needs administrator rights (F2).",
                 severity="warning", title="Services",
             )

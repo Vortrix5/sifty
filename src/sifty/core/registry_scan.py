@@ -2,7 +2,7 @@
 
 Looks at the three standard Uninstall hive locations and reports entries
 whose UninstallString references an executable that no longer exists on
-disk.  MSI/RunDll/system-managed entries are skipped — only entries that
+disk.  MSI/RunDll/system-managed entries are skipped - only entries that
 point at a missing standalone .exe are flagged.
 
 This module is **strictly read-only**; no registry writes are performed.
@@ -26,7 +26,7 @@ _UNINSTALL_HIVES: list[tuple[str, str]] = [
 ]
 
 # Uninstall strings that start with these tokens are system/MSI-managed.
-# Their executables live in system32 or are virtual — never "missing".
+# Their executables live in system32 or are virtual - never "missing".
 _SKIP_PREFIXES = (
     "msiexec",
     "rundll32",
@@ -82,7 +82,7 @@ def find_orphan_uninstall_entries() -> list[OrphanEntry]:
             if not display_name:
                 continue  # no display name → internal/component entry, skip
 
-            # SystemComponent=1 means "hide from Add/Remove Programs" — internal
+            # SystemComponent=1 means "hide from Add/Remove Programs" - internal
             # driver components (NVIDIA, etc.) use this; skip them.
             if values.get("SystemComponent", "0") == "1":
                 continue
@@ -110,7 +110,7 @@ def find_orphan_uninstall_entries() -> list[OrphanEntry]:
 
             lower = uninstall_str.lower().lstrip('"')
             if any(lower.startswith(p) for p in _SKIP_PREFIXES):
-                continue  # system-managed — can't be missing
+                continue  # system-managed - can't be missing
 
             exe = _extract_exe(uninstall_str)
             if exe is None:

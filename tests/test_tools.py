@@ -1,4 +1,4 @@
-"""Tests for the AI tool handlers — verifying they match the real core API.
+"""Tests for the AI tool handlers - verifying they match the real core API.
 
 These exercise the handlers directly (the agent tests use fake tools), which is
 where three signature mismatches hid: find_duplicates returns a dict, startup

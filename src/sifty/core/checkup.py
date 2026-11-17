@@ -3,7 +3,7 @@
 ``run_checkup`` fans the individual domain scans (junk, updates, registry
 orphans, stale downloads, low disk space, startup bloat) out to a thread pool
 and folds the results into a list of :class:`Finding`. It is strictly
-read-only — every finding carries an ``action_key`` (a TUI navigation key /
+read-only - every finding carries an ``action_key`` (a TUI navigation key /
 CLI hint) pointing at the screen or command that can act on it, but the
 checkup itself never deletes or changes anything.
 """
@@ -40,7 +40,7 @@ class Finding:
     summary: str      # one-line result
     severity: str     # "ok" | "info" | "attention"
     action_key: str   # TUI nav key (and CLI hint) that can act on it; "" if none
-    action_label: str = ""  # e.g. "Clean junk" — empty when severity is "ok"
+    action_label: str = ""  # e.g. "Clean junk" - empty when severity is "ok"
 
 
 def _check_junk() -> Finding:
@@ -126,7 +126,7 @@ def _check_startup() -> Finding:
     )
 
 
-# (domain key, check function) — order defines the report.
+# (domain key, check function) - order defines the report.
 CHECKS = [
     ("junk", _check_junk),
     ("updates", _check_updates),

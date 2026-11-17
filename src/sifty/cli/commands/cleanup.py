@@ -1,4 +1,4 @@
-"""`sifty cleanup` — duplicates, large files, and stale downloads."""
+"""`sifty cleanup` - duplicates, large files, and stale downloads."""
 
 from __future__ import annotations
 
@@ -45,18 +45,18 @@ def duplicates_cmd(
         success("No duplicates to remove.")
         return
     console.print(
-        f"{len(groups)} duplicate group(s) · [bold]{preview.items}[/bold] redundant copies · "
+        f"{len(groups):,} duplicate group(s) · [bold]{preview.items:,}[/bold] redundant copies · "
         f"[bold]{human_size(preview.bytes_freed)}[/bold] reclaimable."
     )
     if not apply:
-        console.print("[dim]Dry-run — re-run with --apply to remove the extra copies.[/dim]")
+        console.print("[dim]Dry-run - re-run with --apply to remove the extra copies.[/dim]")
         return
-    if not confirm(f"Move {preview.items} redundant copies ({human_size(preview.bytes_freed)}) to the Recycle Bin?", assume_yes=yes):
+    if not confirm(f"Move {preview.items:,} redundant copies ({human_size(preview.bytes_freed)}) to the Recycle Bin?", assume_yes=yes):
         warn("Cancelled.")
         return
     result = cleanup.trash_paths(to_delete, dry_run=False, extra_protected=extra)
     history.record_clean("cleanup-duplicates", str(path), result.bytes_freed, result.items, result.trashed)
-    success(f"Sent {result.items} copies ({human_size(result.bytes_freed)}) to the Recycle Bin.")
+    success(f"Sent {result.items:,} copies ({human_size(result.bytes_freed)}) to the Recycle Bin.")
 
 
 @app.command("large")
@@ -114,17 +114,17 @@ def stale_cmd(
     for p, s, m in items:
         table.add_row(human_size(s), datetime.fromtimestamp(m).strftime("%Y-%m-%d"), p.name)
     console.print(table)
-    console.print(f"\n[bold]{len(items)} items · {human_size(total)}[/bold]")
+    console.print(f"\n[bold]{len(items):,} items · {human_size(total)}[/bold]")
     if not apply:
-        console.print("[dim]Dry-run — re-run with --apply to remove them.[/dim]")
+        console.print("[dim]Dry-run - re-run with --apply to remove them.[/dim]")
         return
-    if not confirm(f"Move {len(items)} stale items ({human_size(total)}) to the Recycle Bin?", assume_yes=yes):
+    if not confirm(f"Move {len(items):,} stale items ({human_size(total)}) to the Recycle Bin?", assume_yes=yes):
         warn("Cancelled.")
         return
     extra = list(exclude) if exclude else None
     result = cleanup.trash_paths([p for p, _s, _m in items], dry_run=False, extra_protected=extra)
     history.record_clean("cleanup-stale", f"Downloads >{days}d", result.bytes_freed, result.items, result.trashed)
-    success(f"Sent {result.items} items ({human_size(result.bytes_freed)}) to the Recycle Bin.")
+    success(f"Sent {result.items:,} items ({human_size(result.bytes_freed)}) to the Recycle Bin.")
 
 
 @app.command("worktrees")
@@ -133,7 +133,7 @@ def worktrees_cmd(
     apply: bool = typer.Option(False, "--apply", help="Prune git metadata and trash orphaned dirs."),
     yes: bool = typer.Option(False, "--yes", "-y", help="Skip the confirmation prompt."),
 ) -> None:
-    """Find and remove orphaned git worktrees left by AI coding agents."""
+    """Find and remove orphaned git worktrees in a repository."""
     from ...core.vcs import find_orphan_worktrees, prune_worktrees
 
     path = path.expanduser()
@@ -161,14 +161,14 @@ def worktrees_cmd(
     console.print(table)
 
     if not apply:
-        console.print("[dim]Dry-run — re-run with --apply to prune and trash them.[/dim]")
+        console.print("[dim]Dry-run - re-run with --apply to prune and trash them.[/dim]")
         return
-    if not confirm(f"Prune {len(orphans)} orphaned worktree(s)?", assume_yes=yes):
+    if not confirm(f"Prune {len(orphans):,} orphaned worktree(s)?", assume_yes=yes):
         warn("Cancelled.")
         return
     result = prune_worktrees(path, dry_run=False)
     history.record_clean("cleanup-worktrees", str(path), result.bytes_freed, result.items, result.trashed)
-    success(f"Pruned {result.items} worktree(s) ({human_size(result.bytes_freed)}).")
+    success(f"Pruned {result.items:,} worktree(s) ({human_size(result.bytes_freed)}).")
 
 
 class _null:

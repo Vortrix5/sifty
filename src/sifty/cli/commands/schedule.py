@@ -1,4 +1,4 @@
-"""`sifty schedule` — run cleanup profiles automatically via Task Scheduler."""
+"""`sifty schedule` - run cleanup profiles automatically via Task Scheduler."""
 
 from __future__ import annotations
 

@@ -32,7 +32,7 @@ class DiskView(BaseView):
         yield Static("", id="disk-status", classes="status")
 
     def on_mount(self) -> None:
-        # No auto-analysis — only scan when the user asks (Analyze / Browse).
+        # No auto-analysis - only scan when the user asks (Analyze / Browse).
         self.query_one("#biggest-panel").display = False
         self._status("Choose a folder and press Analyze.")
 
@@ -78,7 +78,7 @@ class DiskView(BaseView):
         tree.root.expand()
         for entry, size in items:
             suffix = "\\" if entry.is_dir() else ""
-            tree.root.add_leaf(f"{entry.name}{suffix}  —  {human_size(size)}")
+            tree.root.add_leaf(f"{entry.name}{suffix}  -  {human_size(size)}")
         self._status(f"Top {len(items)} items in {path}")
 
     @work(thread=True, exclusive=True, group="disk")

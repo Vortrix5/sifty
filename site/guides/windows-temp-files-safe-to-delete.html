@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Which Windows temp files are safe to delete | Sifty</title>
+  <meta name="description" content="Is it safe to delete temp files on Windows? Yes, mostly. Here is what the temp folders actually hold, why some files will not delete, and how to clear them safely.">
+  <link rel="canonical" href="https://sifty.tech/guides/windows-temp-files-safe-to-delete.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Which Windows temp files are safe to delete">
+  <meta property="og:description" content="What the Windows temp folders actually hold, why some files will not delete, and how to clear them safely.">
+  <meta property="og:url" content="https://sifty.tech/guides/windows-temp-files-safe-to-delete.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Which Windows temp files are safe to delete",
+    "description": "What the Windows temp folders actually hold, why some files will not delete, and how to clear them safely.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/windows-temp-files-safe-to-delete.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "Windows temp files", "item": "https://sifty.tech/guides/windows-temp-files-safe-to-delete.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>Windows temp files</span>
+  </nav>
+
+  <h1 class="doc-title">Which Windows temp files are safe to delete</h1>
+  <p class="doc-lede">
+    Short answer: nearly all of them. Temp folders are meant to be disposable.
+    Here is what they actually hold, why a few files refuse to delete, and the
+    safe way to clear them.
+  </p>
+  <p class="doc-meta">For Windows 10 and 11. In-use files are skipped, not forced.</p>
+
+  <div class="prose">
+    <h2>What "temp" really means</h2>
+    <p>
+      Windows and the apps you run constantly write working files they intend to
+      throw away: installer scratch space, partial downloads, render caches,
+      crash-time snapshots. There are two main locations:
+    </p>
+    <ul>
+      <li><strong>Your user temp folder</strong>, at <code>%TEMP%</code> (which expands to something like <code>C:\Users\you\AppData\Local\Temp</code>). This is yours and is safe to clear.</li>
+      <li><strong>The system temp folder</strong>, at <code>C:\Windows\Temp</code>. Used by Windows and services. Also safe to clear, but it needs an administrator because of its location.</li>
+    </ul>
+
+    <h2>So is it safe to delete them?</h2>
+    <p>
+      Yes. Nothing in a temp folder is supposed to be permanent, and Windows
+      recreates whatever it needs. The only real catch is files that are
+      <em>currently in use</em>: an app that is running may have a temp file open,
+      and Windows will refuse to delete it while it is locked.
+    </p>
+    <div class="note">
+      <strong>That is a feature, not a problem.</strong> A good cleanup skips
+      locked files and tells you, rather than forcing the delete and risking the
+      app that owns them. You do not need to chase the last few megabytes.
+    </div>
+
+    <h2>The careful way to clear them</h2>
+    <p>
+      The built-in Disk Cleanup tool handles some of this, and you can select the
+      temp folder contents in Explorer and delete them. Either works, but neither
+      gives you a preview, a record of what went, or an undo.
+    </p>
+    <p>Sifty treats user temp and system temp as two of its junk categories. See them first:</p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty junk scan
+  User temp files            <span class="c-b">537 MB</span>
+  Windows temp files (admin) <span class="c-b">210 MB</span>
+  ...</pre>
+    <p>Then clear, with a confirm and a skip report:</p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty junk clean --apply
+<span class="c-g">&#x2713;</span> Sent 12,136 items (537 MB) to the Recycle Bin.
+<span class="c-y">!</span> 41 item(s) skipped (in use).</pre>
+    <p>
+      The system temp folder needs elevation. Run <code>sifty --admin junk clean
+      --apply</code> and Windows will prompt for it. Everything is sent to the
+      Recycle Bin, every applied deletion is written to an audit log, and
+      <code>sifty undo</code> restores the last clean if you need it back.
+    </p>
+  </div>
+
+  <section class="cta">
+    <h2>Clear temp files the safe way</h2>
+    <p>Preview, skip what is in use, keep a record, and undo if you need to.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">The full tour of junk Windows accumulates.</span></a></li>
+      <li><a href="clean-winget-cache.html">Clean the winget cache<span class="r-desc">Clear the installer downloads winget leaves behind.</span></a></li>
+      <li><a href="../alternatives/ccleaner.html">Sifty vs CCleaner<span class="r-desc">An open-source cleaner, compared honestly.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

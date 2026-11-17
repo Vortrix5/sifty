@@ -1,10 +1,10 @@
 <!-- Social-preview banner (1280x640). Embeds docs/logo-no-bg.png (transparent
      icon) by relative path; re-render to docs/social-preview.png with headless
      Chrome screenshotting this file at a 1280x640 window. -->
-<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sifty — sift the junk from the keep">
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sifty: sift the junk from the keep">
   <rect x="0" y="0" width="1280" height="640" fill="#152A4D"/>
 
-  <!-- icon (transparent, floats on the banner — content bbox sized to sit at ~370,320) -->
+  <!-- icon (transparent, floats on the banner; content bbox sized to sit at ~370,320) -->
   <image href="logo-no-bg.png" x="155" y="119" width="428" height="428"/>
 
   <!-- wordmark -->

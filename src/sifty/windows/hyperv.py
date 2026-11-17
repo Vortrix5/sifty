@@ -2,7 +2,7 @@
 
 VHDX files grow as data is written but never automatically shrink.
 ``compact_vhdx`` reclaims the unused space inside the VHD without
-touching the contents — equivalent to running a defrag on a sparse file.
+touching the contents - equivalent to running a defrag on a sparse file.
 """
 
 from __future__ import annotations

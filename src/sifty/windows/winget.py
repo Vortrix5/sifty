@@ -1,4 +1,4 @@
-"""winget primitives — shell out to Microsoft's package manager.
+"""winget primitives - shell out to Microsoft's package manager.
 
 Centralised here so both ``core.apps`` and ``core.updates`` share one
 implementation (and one place to handle UTF-8 decoding of winget's output).

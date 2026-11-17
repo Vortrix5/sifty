@@ -1,4 +1,4 @@
-"""Tabbed group views — host several sub-views under one sidebar entry.
+"""Tabbed group views - host several sub-views under one sidebar entry.
 
 Consolidates the formerly separate "free up space" screens (Junk / Purge /
 Optimize / Smart cleanup) and "what's installed" screens (Installed apps /
@@ -6,7 +6,7 @@ Startup / Services) into two tabbed screens, so the sidebar stays short.
 
 Sub-views are **lazily mounted**: only the active tab's view is instantiated, so
 each sub-view's ``on_mount`` (and its scan worker) fires only when that tab is
-first shown — opening a group never kicks off several scans at once.
+first shown - opening a group never kicks off several scans at once.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from .updates import UpdatesView
 class TabGroupView(BaseView):
     """Hosts several sub-views as lazily-mounted ``TabPane``s."""
 
-    # (tab_id, label, view_cls) — order defines the tab strip.
+    # (tab_id, label, view_cls) - order defines the tab strip.
     TABS: list[tuple[str, str, type[BaseView]]] = []
 
     def __init__(self, initial_tab: str | None = None) -> None:
@@ -83,7 +83,7 @@ class AppsSystemView(TabGroupView):
 
 
 # Old (sub-view) nav key -> (group nav key, tab id). Lets every former screen
-# stay directly reachable — via the command palette and via ``app.show(key)`` —
+# stay directly reachable - via the command palette and via ``app.show(key)`` -
 # now deep-linking into the right tab of its group.
 SUBVIEW_ROUTES: dict[str, tuple[str, str]] = {
     "junk": ("clean", "junk"),

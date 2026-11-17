@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from textual.widgets import Button, DataTable, Input, Select, SelectionList, Static, Tree
 
 from sifty.core.apps import InstalledApp
@@ -41,6 +42,13 @@ def _make_app() -> SiftyApp:
     return SiftyApp(start_workers=False)
 
 
+@pytest.fixture(autouse=True)
+def _isolate_appdata(monkeypatch, tmp_path):
+    # Keep TUI tests off the real %APPDATA% (ai_memory.db conversation history,
+    # snapshots, etc.) so stored state can't leak into or pollute a test.
+    monkeypatch.setenv("APPDATA", str(tmp_path))
+
+
 def test_command_palette_entries_cover_sections_and_admin():
     class _Dummy:
         async def show(self, key):
@@ -62,7 +70,7 @@ def test_command_palette_entries_cover_sections_and_admin():
 async def test_home_is_slim_no_stat_cards():
     async with _make_app().run_test() as pilot:
         await pilot.pause()
-        # The redundant per-domain stat cards are gone — Home is checkup + volumes.
+        # The redundant per-domain stat cards are gone - Home is checkup + volumes.
         assert not pilot.app.query(".stat-card")
         assert pilot.app.screen.query_one("#run-checkup", Button)
         assert pilot.app.screen.query_one("#vol-body", Static)
@@ -431,7 +439,7 @@ async def test_ai_inline_approval_run_and_skip():
 
         # Approve: the worker-side holder flips to True and the row collapses.
         done, holder = threading.Event(), {"ok": False}
-        view._mount_approval("Run optimize_system() — risk: low", done, holder)
+        view._mount_approval("Run optimize_system() - risk: low", done, holder)
         await pilot.pause()
         assert len(pilot.app.query(".approval-row")) == 1
         await pilot.click(".approve")
@@ -441,7 +449,7 @@ async def test_ai_inline_approval_run_and_skip():
 
         # Skip: holder stays False.
         done2, holder2 = threading.Event(), {"ok": False}
-        view._mount_approval("Run clean_junk() — risk: high", done2, holder2)
+        view._mount_approval("Run clean_junk() - risk: high", done2, holder2)
         await pilot.pause()
         await pilot.click(".deny")
         await pilot.pause()
@@ -456,7 +464,7 @@ async def test_ai_pending_approval_denied_on_unmount():
         await pilot.pause()
         view = pilot.app.query_one(AIView)
         done, holder = threading.Event(), {"ok": False}
-        view._mount_approval("Run clean_junk() — risk: high", done, holder)
+        view._mount_approval("Run clean_junk() - risk: high", done, holder)
         await pilot.pause()
         await pilot.app.show("home")  # navigate away with the approval pending
         await pilot.pause()

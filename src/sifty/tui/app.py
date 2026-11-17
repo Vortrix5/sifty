@@ -1,4 +1,4 @@
-"""Sifty TUI — full-screen interactive app.
+"""Sifty TUI - full-screen interactive app.
 
 A thin frontend over the same core functions as the CLI. The sidebar selects a
 content view (see ``views/``); views load their data in background workers and
@@ -39,7 +39,7 @@ SIFTY_THEME = Theme(
     dark=True,
 )
 
-# (nav key, sidebar label) — order defines the menu. No emoji: legacy consoles
+# (nav key, sidebar label) - order defines the menu. No emoji: legacy consoles
 # render them as tofu boxes; Windows Terminal users still get a clean look.
 # "Clean" and "Apps" are tabbed groups (see views/group.py) that fold in the
 # former Junk/Purge/Optimize/Cleanup and Startup/Services screens.
@@ -98,7 +98,7 @@ class SiftyApp(App):
             self.exit(message="Relaunching Sifty as administrator…")
         else:
             self.notify(
-                "Could not elevate — the UAC prompt was dismissed.",
+                "Could not elevate - the UAC prompt was dismissed.",
                 title="Admin",
                 severity="warning",
             )

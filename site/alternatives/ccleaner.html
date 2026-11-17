@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open-source CCleaner alternative for Windows | Sifty</title>
+  <meta name="description" content="Sifty is a free, open-source CCleaner alternative for Windows. Dry-run by default, deletes only to the Recycle Bin, every clean is undoable, and the code is MIT licensed. An honest, feature-by-feature comparison.">
+  <link rel="canonical" href="https://sifty.tech/alternatives/ccleaner.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Open-source CCleaner alternative for Windows | Sifty">
+  <meta property="og:description" content="A free, open-source CCleaner alternative for Windows. Dry-run by default, Recycle Bin only, fully undoable, MIT licensed. Compared honestly.">
+  <meta property="og:url" content="https://sifty.tech/alternatives/ccleaner.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Sifty: an open-source CCleaner alternative for Windows",
+    "description": "A free, open-source CCleaner alternative for Windows. Dry-run by default, Recycle Bin only, fully undoable, MIT licensed.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/alternatives/ccleaner.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "CCleaner alternative", "item": "https://sifty.tech/alternatives/ccleaner.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><span>CCleaner alternative</span>
+  </nav>
+
+  <h1 class="doc-title">An open-source CCleaner alternative for Windows</h1>
+  <p class="doc-lede">
+    Sifty does the cleanup CCleaner is known for, with one big difference: the
+    code is open, nothing is deleted permanently, and every clean can be undone.
+    Here is the honest comparison, including where CCleaner is still the better
+    fit.
+  </p>
+  <p class="doc-meta">Free and MIT licensed. Works on Windows 10 and 11.</p>
+
+  <div class="prose">
+    <h2>Why people look for a CCleaner alternative</h2>
+    <p>
+      CCleaner is the tool most people reach for, and for years it did the job.
+      But a few things push folks to look elsewhere: it is closed source, so you
+      cannot see what it actually deletes; the installer has historically bundled
+      extra software; the genuinely useful features (real-time monitoring, the
+      duplicate finder, automatic updates) sit behind a paid tier; and in 2017 an
+      official build was compromised and shipped malware to millions of users
+      before it was caught.
+    </p>
+    <p>
+      None of that means CCleaner is unusable today. It means that for a tool with
+      permission to delete files all over your system, a lot of people now want
+      something they can actually inspect and easily reverse.
+    </p>
+
+    <h2>What matters in a cleaner you can trust</h2>
+    <p>
+      Sifty is built around the idea that a cleanup tool should be hard to misuse:
+    </p>
+    <ul>
+      <li><strong>Open source.</strong> Every line is on GitHub under the MIT license. The one function that can delete anything is about nine lines long, and you can read it.</li>
+      <li><strong>Dry-run by default.</strong> Every destructive command shows you exactly what it would remove first. Real changes need an explicit <code>--apply</code>.</li>
+      <li><strong>Recycle Bin, never permanent delete.</strong> All removals go through the Recycle Bin, and <code>sifty undo</code> restores the last clean.</li>
+      <li><strong>Protected paths.</strong> <code>C:\Windows</code>, <code>Program Files</code> and your profile root are refused outright. There is no <code>--force</code> flag to override that.</li>
+      <li><strong>Audit log.</strong> Every applied deletion is written to a timestamped log, so you always have receipts.</li>
+    </ul>
+
+    <h2>Sifty vs CCleaner, feature by feature</h2>
+    <div class="table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr><th>Feature</th><th>Sifty</th><th>CCleaner</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Junk and cache cleaning</td><td class="cmp-yes">Yes, 11+ categories</td><td class="cmp-yes">Yes</td></tr>
+          <tr><td>Disk usage analysis</td><td class="cmp-yes">Yes, top folders and volumes</td><td class="cmp-mid">Limited</td></tr>
+          <tr><td>Duplicate file finder</td><td class="cmp-yes">Yes, SHA-256, NTFS-aware</td><td class="cmp-mid">Paid tier</td></tr>
+          <tr><td>App uninstall + leftover scan</td><td class="cmp-yes">Yes, via winget</td><td class="cmp-yes">Yes</td></tr>
+          <tr><td>App updates</td><td class="cmp-yes">Yes, via winget</td><td class="cmp-mid">Paid tier</td></tr>
+          <tr><td>Startup and services manager</td><td class="cmp-yes">Yes, reversible</td><td class="cmp-yes">Yes</td></tr>
+          <tr><td>Dev artifact purge (node_modules, build dirs)</td><td class="cmp-yes">Yes</td><td class="cmp-no">No</td></tr>
+          <tr><td>WSL2 / virtual disk compaction</td><td class="cmp-yes">Yes</td><td class="cmp-no">No</td></tr>
+          <tr><td>Local AI assistant</td><td class="cmp-yes">Yes, runs offline</td><td class="cmp-no">No</td></tr>
+          <tr><td>Scriptable (JSON output)</td><td class="cmp-yes">Yes</td><td class="cmp-no">No</td></tr>
+          <tr><td>Recycle Bin + undo for everything</td><td class="cmp-yes">Yes</td><td class="cmp-mid">Partial</td></tr>
+          <tr><td>Open source</td><td class="cmp-yes">Yes, MIT</td><td class="cmp-no">No</td></tr>
+          <tr><td>Registry "cleaning"</td><td class="cmp-no">No, on purpose</td><td class="cmp-yes">Yes</td></tr>
+          <tr><td>Price</td><td class="cmp-yes">Free</td><td class="cmp-mid">Freemium</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Where CCleaner is still the better fit</h2>
+    <p>
+      It would be dishonest to claim Sifty wins on everything. CCleaner is the
+      right pick if:
+    </p>
+    <ul>
+      <li><strong>You want a polished graphical app and never touch a terminal.</strong> Sifty has a full-screen terminal UI (<code>sifty tui</code>), but it is not a classic point-and-click Windows app.</li>
+      <li><strong>You specifically want registry cleaning.</strong> Sifty deliberately does not scrub the registry, because the space saved is negligible and the risk of breaking things is real. CCleaner offers it; we think it is the wrong trade.</li>
+      <li><strong>You want a single brand your less-technical relatives already recognise.</strong> Familiarity has value, and Sifty is new.</li>
+    </ul>
+
+    <h2>Who Sifty is for</h2>
+    <p>
+      Sifty is built developer-first. It cleans the things developer machines
+      actually accumulate, things a general-purpose cleaner ignores: stray
+      <code>node_modules</code> folders, build output, Python caches, orphaned git
+      worktrees, and WSL2 virtual disks that never give space back. Everything is
+      scriptable with JSON output, and the engine is a reusable Python library. If
+      you live on the command line, it will feel like home.
+    </p>
+
+    <h2>Switching is one command</h2>
+    <p>
+      There is nothing to migrate. Install Sifty alongside whatever you use today
+      and start with the read-only commands, which cannot change anything:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty doctor      <span class="c-d"># check admin rights, winget, Ollama</span>
+<span class="c-p">PS C:\&gt;</span> sifty checkup     <span class="c-d"># one read-only scan across everything</span>
+<span class="c-p">PS C:\&gt;</span> sifty junk scan   <span class="c-d"># see reclaimable space, delete nothing</span></pre>
+    <p>
+      When you are ready to actually clean, add <code>--apply</code> and Sifty will
+      ask before it moves anything to the Recycle Bin.
+    </p>
+  </div>
+
+  <section class="cta">
+    <h2>Try Sifty</h2>
+    <p>Free, open source, and safe to run. The first commands only ever look.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="bleachbit.html">Sifty vs BleachBit<span class="r-desc">How Sifty compares to the other open-source cleaner.</span></a></li>
+      <li><a href="../guides/what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">A plain-English tour of the junk Windows piles up.</span></a></li>
+      <li><a href="../guides/find-duplicate-files-windows.html">Find duplicate files on Windows for free<span class="r-desc">Hash-based, hardlink-aware, no paid tier.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

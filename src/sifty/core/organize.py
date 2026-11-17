@@ -127,7 +127,7 @@ def undo_last() -> tuple[int, int]:
             failed += 1
     for folder in touched_dirs:
         try:
-            folder.rmdir()  # only succeeds when empty — exactly what we want
+            folder.rmdir()  # only succeeds when empty - exactly what we want
         except OSError:
             pass
     if pairs:

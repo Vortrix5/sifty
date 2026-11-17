@@ -11,7 +11,7 @@ Only the latest release receives fixes.
 - Destructive commands are dry-run by default and require `--apply` plus a
   confirmation.
 - The AI integration is local-only (Ollama) and metadata-only: file names,
-  sizes and paths — never file contents — and the AI cannot delete anything
+  sizes and paths, never file contents. The AI cannot delete anything
   itself; high-risk tool calls require explicit user approval.
 - Elevation (UAC) is on-demand and never silent.
 

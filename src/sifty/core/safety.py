@@ -1,22 +1,22 @@
-"""Safety guardrails — the only place the app is allowed to delete things.
+"""Safety guardrails - the only place the app is allowed to delete things.
 
 The model has three tiers of roots plus per-call carve-outs:
 
-* **Contents-protected roots** — critical OS directories (``C:\\Windows``, the
+* **Contents-protected roots** - critical OS directories (``C:\\Windows``, the
   ``Program Files`` trees, ``ProgramData``). Deleting one of these *or anything
   inside it* is refused, and deleting an *ancestor* of one (e.g. ``C:\\``) is
   refused too.
-* **Self-protected roots** — the drive root (``C:\\``) and the user's profile
+* **Self-protected roots** - the drive root (``C:\\``) and the user's profile
   root. Deleting the root *itself* (or an ancestor) is refused, but ordinary
-  files inside them are fine — otherwise the whole disk would be off-limits.
-* **Allowed subtrees** — explicit carve-outs a caller vouches for (e.g. the
+  files inside them are fine - otherwise the whole disk would be off-limits.
+* **Allowed subtrees** - explicit carve-outs a caller vouches for (e.g. the
   junk module's temp/cache locations). A path inside a contents-protected root
   is only permitted if it also sits inside one of these.
 
 User-supplied ``extra_protected`` paths are treated as contents-protected.
 
 Every deletion goes through :func:`trash`, which sends to the Recycle Bin via
-Send2Trash — there is no permanent ``os.remove``/``rmtree`` anywhere in the app.
+Send2Trash - there is no permanent ``os.remove``/``rmtree`` anywhere in the app.
 """
 
 from __future__ import annotations

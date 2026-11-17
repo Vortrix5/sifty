@@ -38,7 +38,7 @@ def _browser_cache_roots(local: Path) -> list[Path]:
 
     Chromium-family browsers keep one cache per profile under ``User Data``
     (Default, Profile 1, …); Firefox keeps ``cache2`` per profile. Only cache
-    dirs are returned — never cookies, history, or passwords.
+    dirs are returned - never cookies, history, or passwords.
     """
     roots: list[Path] = []
 
@@ -99,6 +99,52 @@ def _browser_cache_roots(local: Path) -> list[Path]:
 
     return roots
 
+def _discord_cache_roots() -> list[Path]:
+    """Cache directories for Discord, Discord PTB, and Discord Canary.
+
+    Only returns specific Chromium cache paths - never login session,
+    local storage, or settings data.
+    """
+    roots: list[Path] = []
+    appdata = _env_path("APPDATA")
+    if not appdata:
+        return roots
+
+    flavors = ["discord", "discordptb", "discordcanary"]
+    cache_subs = ["Cache", "Code Cache", "GPUCache"]
+
+    for flavor in flavors:
+        flavor_dir = appdata / flavor
+        if not flavor_dir.is_dir():
+            continue
+        for sub in cache_subs:
+            cand = flavor_dir / sub
+            if cand.is_dir():
+                roots.append(cand)
+
+    return roots
+
+def _vscode_cache_roots() -> list[Path]:
+    """Cache directories for VS Code (stable channel).
+
+    Only returns the Chromium/V8 cache subfolders - never ``User``, which
+    holds settings, keybindings, and extensions.
+    """
+    roots: list[Path] = []
+    appdata = _env_path("APPDATA")
+    if not appdata:
+        return roots
+
+    code_dir = appdata / "Code"
+    if not code_dir.is_dir():
+        return roots
+
+    for sub in ("Cache", "CachedData", "Code Cache", "GPUCache"):
+        cand = code_dir / sub
+        if cand.is_dir():
+            roots.append(cand)
+
+    return roots
 
 def junk_categories(config=None) -> list[JunkCategory]:
     """Build the list of junk categories from the environment + config."""
@@ -216,6 +262,44 @@ def junk_categories(config=None) -> list[JunkCategory]:
             JunkCategory(
                 "onedrive-logs", "OneDrive sync logs",
                 "OneDrive diagnostic logs (rebuilt automatically).", [od_logs],
+            )
+        )
+
+    # Discord caches (Chromium style, safe to clear)
+    discord_roots = _discord_cache_roots()
+    if discord_roots:
+        cats.append(
+            JunkCategory(
+                "discord-cache", "Discord cache",
+                "On-disk caches for Discord, PTB, and Canary channels (never login session data).",
+                discord_roots,
+            )
+        )
+
+    # Spotify caches (re-downloaded on demand; login data lives elsewhere)
+    if local:
+        spotify_roots = [
+            root for root in (local / "Spotify" / "Storage", local / "Spotify" / "Data")
+            if root.is_dir()
+        ]
+        if spotify_roots:
+            cats.append(
+                JunkCategory(
+                    "spotify-cache", "Spotify cache",
+                    "Spotify cached audio and data (never login or session data).",
+                    spotify_roots,
+                )
+            )
+
+    # VS Code cache (Chromium/V8 style, safe to clear)
+    vscode_roots = _vscode_cache_roots()
+    if vscode_roots:
+        cats.append(
+            JunkCategory(
+                "vscode-cache", "VS Code cache",
+                "On-disk caches for VS Code (never the User folder - settings, "
+                "keybindings, and extensions).",
+                vscode_roots,
             )
         )
 
@@ -357,7 +441,7 @@ def clean(
     """Trash the contents of selected junk categories.
 
     Returns a :class:`CleanResult`. ``trashed`` holds the original paths sent to
-    the Recycle Bin (empty on a dry-run) — used to record an undoable session.
+    the Recycle Bin (empty on a dry-run) - used to record an undoable session.
     ``extra_protected`` extends the built-in denylist for this call only.
     """
     config = config or load_config()
@@ -392,7 +476,7 @@ def clean(
                 ):
                     continue
                 # Smart installer check: only flag installers for apps that are
-                # already installed (conservative — skip if we can't match).
+                # already installed (conservative - skip if we can't match).
                 if (
                     cat.key == "downloads-installers"
                     and _installed_names is not None

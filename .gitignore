@@ -7,7 +7,7 @@ build/
 dist/
 *.spec
 
-# Claude Code — keep all Claude tooling files out of version control
+# Local assistant/editor config
 .claude/
 CLAUDE.md
 
@@ -19,6 +19,9 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # OS
 Thumbs.db

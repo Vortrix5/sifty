@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What is safe to delete on your C: drive (Windows 10 / 11) | Sifty</title>
+  <meta name="description" content="A plain-English list of what is actually safe to delete on your C: drive to free up space on Windows, what to leave alone, and how to clear it all in one scan.">
+  <link rel="canonical" href="https://sifty.tech/guides/what-to-delete-c-drive.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="What is safe to delete on your C: drive (Windows 10 / 11)">
+  <meta property="og:description" content="What is actually safe to delete on your C: drive to free up space on Windows, what to leave alone, and how to clear it in one scan.">
+  <meta property="og:url" content="https://sifty.tech/guides/what-to-delete-c-drive.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "What is safe to delete on your C: drive (Windows 10 / 11)",
+    "description": "What is actually safe to delete on your C: drive to free up space on Windows, what to leave alone, and how to clear it in one scan.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/what-to-delete-c-drive.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "What to delete on C:", "item": "https://sifty.tech/guides/what-to-delete-c-drive.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>What to delete on C:</span>
+  </nav>
+
+  <h1 class="doc-title">What is safe to delete on your C: drive</h1>
+  <p class="doc-lede">
+    When the C: drive turns red, it is tempting to start deleting folders to free
+    up space. Some of that is genuinely safe junk. Some of it will break Windows.
+    Here is the honest line between the two.
+  </p>
+  <p class="doc-meta">For Windows 10 and 11. When in doubt, preview first and delete to the Recycle Bin.</p>
+
+  <div class="prose">
+    <h2>Safe to clear</h2>
+    <p>These build back up on their own and removing them costs you nothing but a slightly slower next launch:</p>
+    <ul>
+      <li><strong>Temporary files.</strong> Your per-user temp folder (<code>%TEMP%</code>) and the system temp folder fill with installer scraps and half-written files. <a href="windows-temp-files-safe-to-delete.html">More on temp files here.</a></li>
+      <li><strong>Browser caches.</strong> Chrome, Edge, Brave, Vivaldi and Firefox each keep a cache that is often over a gigabyte. Clearing it only means pages reload once. Cookies, history and passwords are separate and should be left alone.</li>
+      <li><strong>Thumbnail and icon cache.</strong> Explorer rebuilds these automatically.</li>
+      <li><strong>Windows Update cache.</strong> Update packages that already installed sit in <code>SoftwareDistribution</code> doing nothing.</li>
+      <li><strong>The winget download cache.</strong> Installer files winget downloaded and never cleaned up. <a href="clean-winget-cache.html">Details here.</a></li>
+      <li><strong>Crash dumps and error reports.</strong> Per-user crash dumps and Windows Error Reporting queues are only useful while you are actively debugging a crash.</li>
+      <li><strong>Old logs.</strong> Archived event logs and OneDrive sync logs.</li>
+    </ul>
+
+    <h2>Safe, but think first</h2>
+    <ul>
+      <li><strong>Windows.old.</strong> After a feature update Windows keeps your previous install for rollback, often 15 to 30 GB. Safe to remove once you are sure the new version is stable, but it is your only easy path back.</li>
+      <li><strong>Old installers in Downloads.</strong> The <code>.exe</code> and <code>.msi</code> files for apps you already installed. Safe to delete, but double-check you do not need the offline installer again.</li>
+      <li><strong>The Recycle Bin.</strong> Obvious, but worth saying: emptying it is the last step, not the first.</li>
+    </ul>
+
+    <h2>Do not touch</h2>
+    <div class="note warn">
+      <strong>Leave these alone.</strong> <code>C:\Windows</code> and
+      <code>System32</code>, <code>Program Files</code> and
+      <code>Program Files (x86)</code>, <code>ProgramData</code>, your drivers, and
+      the page file (<code>pagefile.sys</code>). Deleting from here does not free
+      meaningful space and will break applications or Windows itself.
+    </div>
+
+    <h2>The fast, safe way to do all of it</h2>
+    <p>
+      Rather than hunt through each folder, run one read-only scan. Sifty's
+      <code>checkup</code> looks across everything without changing a thing:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty checkup</pre>
+    <p>To see reclaimable junk broken down by category, still without deleting:</p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty junk scan
+  User temp files       <span class="c-b">537 MB</span>
+  Browser caches        <span class="c-b">1.2 GB</span>
+  Thumbnail cache       <span class="c-b">13 MB</span>
+  OneDrive sync logs    <span class="c-b">83 MB</span>
+<span class="c-b">Total reclaimable: 1.8 GB</span></pre>
+    <p>
+      Sifty covers eleven junk categories out of the box (plus Windows.old and old
+      installers as opt-in extras), and it knows the protected folders above are
+      off-limits. When you want to actually clean, add <code>--apply</code>:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty junk clean --apply   <span class="c-d"># asks first, sends to Recycle Bin</span></pre>
+    <p>
+      Everything goes to the Recycle Bin, and <code>sifty undo</code> reverses the
+      last clean. To find what is actually eating the space beyond junk, point the
+      analyzer at a folder:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty disk analyze C:\Users\you   <span class="c-d"># biggest folders and files</span></pre>
+  </div>
+
+  <section class="cta">
+    <h2>Free up space without the guesswork</h2>
+    <p>One read-only scan, clear categories, and an undo for everything.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="windows-temp-files-safe-to-delete.html">Which Windows temp files are safe to delete<span class="r-desc">What the temp folders really hold.</span></a></li>
+      <li><a href="find-duplicate-files-windows.html">Find duplicate files on Windows<span class="r-desc">Often the biggest hidden space win.</span></a></li>
+      <li><a href="../alternatives/ccleaner.html">Sifty vs CCleaner<span class="r-desc">An open-source cleaner, compared honestly.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

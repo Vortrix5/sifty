@@ -101,8 +101,8 @@ class AppsView(BaseView):
         for a in self._filtered:
             mark = _MARK if a.name in self._marked else _UNMARK
             table.add_row(
-                mark, a.name, a.version or "—", a.publisher or "—",
-                human_size(a.size_bytes) if a.size_bytes else "—",
+                mark, a.name, a.version or "-", a.publisher or "-",
+                human_size(a.size_bytes) if a.size_bytes else "-",
                 key=a.name,
             )
         marked = len(self._marked)
@@ -148,7 +148,7 @@ class AppsView(BaseView):
             self._toggle_mark(app_obj.name)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Clicking (or Enter on) a row toggles its mark — easy multi-select."""
+        """Clicking (or Enter on) a row toggles its mark - easy multi-select."""
         if event.row_key is not None and event.row_key.value is not None:
             self._toggle_mark(event.row_key.value)
 

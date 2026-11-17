@@ -1,4 +1,4 @@
-"""Recycle Bin primitives — trash (Send2Trash) and restore (winshell)."""
+"""Recycle Bin primitives - trash (Send2Trash) and restore (winshell)."""
 
 from __future__ import annotations
 

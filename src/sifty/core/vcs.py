@@ -1,8 +1,8 @@
-"""Git worktree cleanup: detect and prune orphaned AI-agent worktrees.
+"""Git worktree cleanup: detect and prune orphaned worktrees.
 
-AI coding tools (Claude Code, Cursor, GitHub Copilot Workspace) create git
-worktrees for isolated task execution.  When a task completes or is abandoned
-the worktrees often remain, occupying several GB each.
+Worktrees accumulate on dev machines: tools and scripts add them for isolated
+checkouts and experiments, and they tend to outlive whatever created them,
+at several GB each.
 
 ``find_orphan_worktrees`` identifies worktrees that git itself considers prunable
 (deleted branch, missing lock, absent directory).  ``prune_worktrees`` runs

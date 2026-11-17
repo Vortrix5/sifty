@@ -51,7 +51,7 @@ def find_large_files(
             if st.st_size < min_size:
                 continue
             if cutoff is not None and st.st_mtime >= cutoff:
-                continue  # recently modified — skip
+                continue  # recently modified - skip
             results.append((fp, st.st_size))
     results.sort(key=lambda t: t[1], reverse=True)
     return results[:top]
@@ -98,7 +98,7 @@ def choose_duplicate_deletions(
             if cutoff is not None:
                 try:
                     if p.stat(follow_symlinks=False).st_mtime >= cutoff:
-                        continue  # recently modified — skip
+                        continue  # recently modified - skip
                 except OSError:
                     pass
             to_delete.append(p)

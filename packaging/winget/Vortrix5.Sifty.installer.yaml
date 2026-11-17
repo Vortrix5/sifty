@@ -1,4 +1,4 @@
-# Installer manifest — see https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+# Installer manifest, see https://aka.ms/winget-manifest.installer.1.6.0.schema.json
 # Sifty ships as a single-file console exe, so it installs as a "portable":
 # winget drops sifty.exe and registers the `sifty` command alias.
 PackageIdentifier: Vortrix5.Sifty

@@ -43,6 +43,7 @@ from ...ai.agent import (
 )
 from ...ai.client import OllamaClient, OllamaUnavailable
 from ...ai.tools import TOOLS as ALL_TOOLS
+from ...core import ai_memory
 from .base import BaseView
 
 logger = logging.getLogger("sifty.tui")
@@ -95,9 +96,11 @@ class AIView(BaseView):
         # In-flight inline approval: (worker wake event, result holder, chat row).
         self._pending: tuple[threading.Event, dict, Horizontal] | None = None
         self._autonomy = current_autonomy()
-        # Conversation + context persist on the app, surviving navigation.
-        self._messages: list[dict] = getattr(self.app, "_ai_messages", None) or []
-        self.app._ai_messages = self._messages
+        # Conversation persists on the app across navigation and, seeded once per
+        # session from ai_memory.db, across restarts too.
+        if getattr(self.app, "_ai_messages", None) is None:
+            self.app._ai_messages = ai_memory.recent_messages(20)
+        self._messages: list[dict] = self.app._ai_messages
         self._system: str | None = getattr(self.app, "_ai_system", None)
         self._replay_history()
         if self.workers_enabled():
@@ -119,7 +122,7 @@ class AIView(BaseView):
             status.update(f"[green]●[/green] Ollama connected · model [b]{self._client.model}[/b]")
         else:
             status.update(
-                f"[yellow]●[/yellow] Ollama not reachable at {self._client.host} — "
+                f"[yellow]●[/yellow] Ollama not reachable at {self._client.host} - "
                 f"start it and run `ollama pull {self._client.model}`"
             )
 
@@ -138,7 +141,7 @@ class AIView(BaseView):
             self._resolve_approval(approved=event.button.has_class("approve"))
             return
         nav_key = getattr(event.button, "_nav_key", None)
-        if nav_key:  # a tool-result follow-up action — jump to the screen
+        if nav_key:  # a tool-result follow-up action - jump to the screen
             await self.app.show(nav_key)
 
     def _submit(self, question: str) -> None:
@@ -148,6 +151,7 @@ class AIView(BaseView):
         log = self.query_one("#chat-log", VerticalScroll)
         log.mount(Static(f"[b cyan]You[/b cyan]  {escape(question)}", classes="msg-user"))
         self._messages.append({"role": "user", "content": question})
+        ai_memory.append_message("user", question)
         self._thinking = Static("[dim]Sifty is thinking…[/dim]", classes="msg-thinking")
         log.mount(self._thinking)
         log.scroll_end(animate=False)
@@ -157,7 +161,7 @@ class AIView(BaseView):
     @work(thread=True, exclusive=True, group="ai-chat")
     def ask(self, messages: list[dict]) -> None:
         if not self._client.is_available():
-            self.app.call_from_thread(self._show_error, "AI unavailable — is Ollama running?")
+            self.app.call_from_thread(self._show_error, "AI unavailable - is Ollama running?")
             return
         system = self._ensure_system()
         full = [{"role": "system", "content": system}] + messages
@@ -211,7 +215,7 @@ class AIView(BaseView):
     def _confirm_blocking(self, prompt: str) -> bool:
         """Ask the user to approve a tool from the worker thread (blocks until answered).
 
-        Renders inline Run/Skip buttons in the chat — the AI's proposal reads
+        Renders inline Run/Skip buttons in the chat - the AI's proposal reads
         like a suggestion the user accepts in place, not a modal interruption.
         """
         done = threading.Event()
@@ -245,7 +249,7 @@ class AIView(BaseView):
         done.set()  # wake the agent worker
 
     def on_unmount(self) -> None:
-        # Navigating away with an approval pending: deny it (no widget work —
+        # Navigating away with an approval pending: deny it (no widget work -
         # the view is going away) so the agent worker doesn't block forever.
         if self._pending is not None:
             done, holder, _row = self._pending
@@ -256,6 +260,7 @@ class AIView(BaseView):
     def _remember(self, answer: str) -> None:
         if answer:
             self._messages.append({"role": "assistant", "content": answer})
+            ai_memory.append_message("assistant", answer)
 
     # --------------------------------------------------- UI helpers (main thread)
     def _log(self) -> VerticalScroll:

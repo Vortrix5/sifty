@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to find duplicate files on Windows for free | Sifty</title>
+  <meta name="description" content="Find and remove duplicate files on Windows for free, using content hashing instead of fragile name matching. Hardlink-aware, no paid tier, safe to preview first.">
+  <link rel="canonical" href="https://sifty.tech/guides/find-duplicate-files-windows.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to find duplicate files on Windows for free">
+  <meta property="og:description" content="Find and remove duplicate files on Windows for free, using content hashing instead of fragile name matching. Hardlink-aware, no paid tier.">
+  <meta property="og:url" content="https://sifty.tech/guides/find-duplicate-files-windows.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to find duplicate files on Windows for free",
+    "description": "Find and remove duplicate files on Windows for free, using content hashing instead of fragile name matching. Hardlink-aware, no paid tier.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/find-duplicate-files-windows.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "Find duplicate files", "item": "https://sifty.tech/guides/find-duplicate-files-windows.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>Find duplicate files</span>
+  </nav>
+
+  <h1 class="doc-title">How to find duplicate files on Windows for free</h1>
+  <p class="doc-lede">
+    Duplicate photos, repeated downloads and copied project folders quietly waste
+    a surprising amount of space. Here is how to find them reliably, by file
+    contents rather than by name, without paying for a "pro" tier.
+  </p>
+  <p class="doc-meta">For Windows 10 and 11. The scan is read-only, nothing is deleted without you.</p>
+
+  <div class="prose">
+    <h2>Why matching by name does not work</h2>
+    <p>
+      The same photo can be saved as <code>IMG_2034.jpg</code>,
+      <code>IMG_2034 (1).jpg</code> and <code>vacation-cover.jpg</code>. Matching
+      on filenames misses all three as duplicates, and at the same time it flags
+      genuinely different files that happen to share a name. The only reliable way
+      to know two files are identical is to compare their <em>contents</em>.
+    </p>
+
+    <h2>Hashing is the reliable way</h2>
+    <p>
+      A content hash reads a file and produces a short fingerprint. Two files with
+      the same fingerprint are the same file, byte for byte, regardless of name,
+      date or location. Sifty uses SHA-256 for this, and it does it efficiently:
+    </p>
+    <ul>
+      <li><strong>It groups by size first.</strong> Files of different sizes cannot be identical, so only same-size candidates ever get hashed. That skips the vast majority of the work.</li>
+      <li><strong>It hashes in parallel.</strong> The size-matched candidates are fingerprinted across multiple threads, so large folders go quickly.</li>
+      <li><strong>It is hardlink-aware.</strong> On NTFS, two paths can point at the same physical data through a hardlink. Those occupy one block on disk, so Sifty counts them once and never reports them as wasted space.</li>
+    </ul>
+
+    <h2>Run the scan</h2>
+    <p>Point it at any folder or whole drive. This only reads, it changes nothing:</p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty disk duplicates D:\Photos
+Found <span class="c-b">316</span> duplicate groups.
+
+<span class="c-b">Reclaimable by de-duplicating: 6.4 GB</span></pre>
+    <p>
+      A "group" is a set of identical files. The reclaimable figure is what you
+      would save by keeping one copy from each group and removing the rest.
+    </p>
+
+    <h2>Remove the extras safely</h2>
+    <p>
+      When you want to act on it, the cleanup command de-duplicates a folder,
+      keeping one copy of each file and sending the rest to the Recycle Bin. It
+      previews by default:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty cleanup duplicates D:\Photos          <span class="c-d"># preview (dry-run)</span>
+<span class="c-p">PS C:\&gt;</span> sifty cleanup duplicates D:\Photos --apply  <span class="c-d"># asks, then trashes extras</span></pre>
+    <div class="note">
+      <strong>Nothing is lost.</strong> One copy of every file is always kept, the
+      removed copies go to the Recycle Bin, and <code>sifty undo</code> restores
+      the last clean if you change your mind.
+    </div>
+  </div>
+
+  <section class="cta">
+    <h2>Find your duplicates</h2>
+    <p>Free and open source, content-hashed, with no paid tier hiding the good part.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">The full tour of junk Windows accumulates.</span></a></li>
+      <li><a href="delete-node-modules-windows.html">Delete every node_modules on Windows<span class="r-desc">Clear stale dependency trees in one pass.</span></a></li>
+      <li><a href="../alternatives/ccleaner.html">Sifty vs CCleaner<span class="r-desc">Their duplicate finder is paid. This one is not.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

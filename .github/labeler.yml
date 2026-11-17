@@ -1,0 +1,43 @@
+# Path-based PR labels, applied by .github/workflows/labeler.yml
+# Syntax: actions/labeler v5
+
+"area: site":
+  - changed-files:
+      - any-glob-to-any-file: ["site/**"]
+
+"area: cli":
+  - changed-files:
+      - any-glob-to-any-file: ["src/sifty/cli/**"]
+
+"area: tui":
+  - changed-files:
+      - any-glob-to-any-file: ["src/sifty/tui/**"]
+
+"area: core":
+  - changed-files:
+      - any-glob-to-any-file: ["src/sifty/core/**"]
+
+"area: ai":
+  - changed-files:
+      - any-glob-to-any-file: ["src/sifty/ai/**"]
+
+"area: packaging":
+  - changed-files:
+      - any-glob-to-any-file: ["packaging/**", "pyproject.toml"]
+
+"docs":
+  - changed-files:
+      - any-glob-to-any-file: ["**/*.md", "docs/**"]
+
+"tests":
+  - changed-files:
+      - any-glob-to-any-file: ["tests/**"]
+
+"ci":
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
+
+# Touches the safety core: flag for careful review.
+"safety: review carefully":
+  - changed-files:
+      - any-glob-to-any-file: ["src/sifty/core/safety.py"]

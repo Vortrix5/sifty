@@ -1,0 +1,22 @@
+# Coverage is enforced: the whole src/sifty tree must stay at or above target.
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 1%          # tolerate matrix-job noise (py3.11 vs py3.13)
+        informational: false   # blocking
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+        informational: false
+
+comment:
+  layout: "reach, diff, files"
+  require_changes: true
+
+# Both matrix jobs upload; wait for both before posting status.
+codecov:
+  notify:
+    after_n_builds: 2

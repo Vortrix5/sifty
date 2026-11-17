@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to shrink a bloated WSL2 disk (ext4.vhdx) on Windows | Sifty</title>
+  <meta name="description" content="WSL2 grows its virtual disk but never gives the space back, even after you delete files inside Linux. Here is why, and how to compact the ext4.vhdx safely on Windows.">
+  <link rel="canonical" href="https://sifty.tech/guides/shrink-wsl2-vhdx.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to shrink a bloated WSL2 disk (ext4.vhdx)">
+  <meta property="og:description" content="Why WSL2 keeps disk space after you delete files, and how to compact the ext4.vhdx virtual disk safely.">
+  <meta property="og:url" content="https://sifty.tech/guides/shrink-wsl2-vhdx.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to shrink a bloated WSL2 disk (ext4.vhdx) on Windows",
+    "description": "Why WSL2 keeps disk space after you delete files, and how to compact the ext4.vhdx virtual disk safely.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/shrink-wsl2-vhdx.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "Shrink a WSL2 disk", "item": "https://sifty.tech/guides/shrink-wsl2-vhdx.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>Shrink a WSL2 disk</span>
+  </nav>
+
+  <h1 class="doc-title">How to shrink a bloated WSL2 disk (ext4.vhdx)</h1>
+  <p class="doc-lede">
+    You deleted gigabytes inside your Linux distro, but Windows still shows the
+    space as used. WSL2 grows its virtual disk on demand and never shrinks it
+    back on its own. Here is how to reclaim that space safely.
+  </p>
+  <p class="doc-meta">For WSL2 on Windows 10 and 11. Compaction only, your files are untouched.</p>
+
+  <div class="prose">
+    <h2>Why WSL2 holds onto the space</h2>
+    <p>
+      Each WSL2 distribution stores its entire Linux filesystem inside a single
+      virtual disk file called <code>ext4.vhdx</code>. That disk is
+      <em>dynamically expanding</em>: as you install packages, pull images and
+      build projects, the file grows to fit. The catch is that it only ever grows.
+      When you delete files inside Linux, the space is freed <em>inside</em> the
+      virtual disk, but the <code>.vhdx</code> file on Windows stays the same size.
+      Docker Desktop's WSL2 backend behaves the same way and is usually the worst
+      offender.
+    </p>
+    <p>
+      To give the space back to Windows, you have to <strong>compact</strong> the
+      virtual disk: tell it to release the empty blocks it is no longer using.
+      Compaction does not touch your data, it just shrinks the file to match what
+      is actually inside.
+    </p>
+
+    <h2>Find the disk</h2>
+    <p>
+      Distro disks usually live under your local app data, for example:
+    </p>
+    <pre class="code-block">%LOCALAPPDATA%\Packages\&lt;distro-package&gt;\LocalState\ext4.vhdx</pre>
+    <p>
+      Docker's data disk sits under <code>%LOCALAPPDATA%\Docker\wsl</code>. There
+      can be several, which is part of why this is annoying to do by hand.
+    </p>
+
+    <h2>The manual way with diskpart</h2>
+    <p>
+      First shut WSL down completely so nothing has the disk open:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> wsl --shutdown</pre>
+    <p>Then compact the file with <code>diskpart</code>:</p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> diskpart
+DISKPART&gt; select vdisk file="C:\Users\you\AppData\Local\Packages\...\ext4.vhdx"
+DISKPART&gt; attach vdisk readonly
+DISKPART&gt; compact vdisk
+DISKPART&gt; detach vdisk
+DISKPART&gt; exit</pre>
+    <div class="note warn">
+      <strong>Watch out:</strong> you have to type the exact path for every disk,
+      and run the whole sequence once per <code>.vhdx</code>. Miss the
+      <code>wsl --shutdown</code> step and <code>compact</code> will fail because
+      the disk is in use.
+    </div>
+
+    <h2>The one-command way with Sifty</h2>
+    <p>
+      Sifty finds every virtual disk on the system for you and compacts each one,
+      no paths to type:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty optimize</pre>
+    <p>
+      Pick <strong>Compact virtual hard disks</strong> from the list. Sifty
+      discovers each <code>.vhdx</code>, compacts it in place, and reports how much
+      it reclaimed. This is a non-destructive operation: it only releases empty
+      space and never changes the contents of your Linux filesystem.
+    </p>
+    <div class="note">
+      <strong>Heads up:</strong> compacting virtual disks needs an elevated
+      terminal. Run <code>sifty --admin optimize</code> and Windows will prompt for
+      elevation, or start your terminal as Administrator. <code>sifty doctor</code>
+      tells you whether you are already elevated.
+    </div>
+
+    <h2>How often to do it</h2>
+    <p>
+      There is no need to compact constantly. Do it after a big cleanup inside
+      Linux, after pruning Docker images (<code>docker system prune</code>), or
+      whenever your C: drive starts feeling tight and WSL is the obvious culprit.
+    </p>
+  </div>
+
+  <section class="cta">
+    <h2>Reclaim WSL2 space safely</h2>
+    <p>Sifty compacts every virtual disk for you, without touching your files.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="delete-node-modules-windows.html">Delete every node_modules on Windows<span class="r-desc">Clear stale dependency trees in one pass.</span></a></li>
+      <li><a href="what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">The full tour of junk Windows accumulates.</span></a></li>
+      <li><a href="clean-winget-cache.html">Clean the winget cache<span class="r-desc">Clear the installer downloads winget leaves behind.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

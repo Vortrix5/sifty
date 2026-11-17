@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import patch
 
 from sifty.core import registry_scan
@@ -124,3 +125,58 @@ def test_results_sorted_alphabetically(tmp_path):
 
     names = [r.display_name for r in results]
     assert names == sorted(names, key=str.lower)
+
+
+# --- _extract_exe ----------------------------------------------------------
+
+
+def test_extract_exe_empty_returns_none():
+    assert registry_scan._extract_exe("   ") is None
+
+
+def test_extract_exe_unterminated_quote_falls_back():
+    # An unbalanced quote makes shlex raise ValueError → split() fallback.
+    assert registry_scan._extract_exe('"C:\\un.exe /S') == Path("C:\\un.exe")
+
+
+def test_extract_exe_quotes_only_is_none():
+    assert registry_scan._extract_exe('""') is None
+
+
+# --- skip branches ---------------------------------------------------------
+
+
+def test_skips_system_components():
+    ls, rv = _make_registry({
+        "App1": {
+            "DisplayName": "GPU Driver",
+            "UninstallString": "C:\\missing.exe",
+            "SystemComponent": "1",
+        },
+    })
+    with patch.object(registry_scan, "list_subkeys", ls), \
+         patch.object(registry_scan, "read_key_values", rv):
+        assert find_orphan_uninstall_entries() == []
+
+
+def test_skips_no_remove_entries():
+    ls, rv = _make_registry({
+        "App1": {
+            "DisplayName": "Permanent App",
+            "UninstallString": "C:\\missing.exe",
+            "NoRemove": "1",
+        },
+    })
+    with patch.object(registry_scan, "list_subkeys", ls), \
+         patch.object(registry_scan, "read_key_values", rv):
+        assert find_orphan_uninstall_entries() == []
+
+
+def test_skips_entry_with_empty_exe_token():
+    # UninstallString is non-empty but resolves to no executable.
+    ls, rv = _make_registry({
+        "App1": {"DisplayName": "Weird App", "UninstallString": '""'},
+    })
+    with patch.object(registry_scan, "list_subkeys", ls), \
+         patch.object(registry_scan, "read_key_values", rv):
+        assert find_orphan_uninstall_entries() == []

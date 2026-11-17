@@ -2,7 +2,7 @@
 
 The checkup hero runs the read-only ``core.checkup`` suite; each finding
 renders with an action button that **fixes it right here** where that is safe
-(clean junk, clean stale downloads, apply updates — each behind the usual
+(clean junk, clean stale downloads, apply updates - each behind the usual
 confirm modal) and deep-links to the owning screen where a human should review
 first (registry orphans, disk space, startup). No duplicate stat cards: the
 sidebar already covers per-domain detail.
@@ -12,14 +12,18 @@ from __future__ import annotations
 
 import logging
 
+from rich.markdown import Markdown
 from rich.text import Text
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button, Static
 
+from ...ai import advisor
+from ...ai.client import OllamaClient
 from ...console import human_size
-from ...core import checkup, cleanup, disk, history, junk, updates
+from ...core import agent_run, anomaly, checkup, cleanup, disk, history, junk, updates
+from ...core.anomaly import Anomaly
 from ...core.checkup import Finding
 from ...windows.admin import is_admin
 from ..modals import ConfirmModal
@@ -45,37 +49,47 @@ class HomeView(BaseView):
     def compose(self) -> ComposeResult:
         yield Static("Overview", classes="title")
         if is_admin():
-            yield Static("[green]●[/green] Administrator — all tasks available.",
+            yield Static("[green]●[/green] Administrator - all tasks available.",
                          classes="subtle")
         else:
             yield Static(
-                "[yellow]●[/yellow] Standard user — some tasks need elevation.  "
+                "[yellow]●[/yellow] Standard user - some tasks need elevation.  "
                 "[@click=app.elevate][b]Elevate (F2)[/b][/]",
                 classes="subtle",
             )
         with Panel(title="Health checkup", id="checkup-panel"):
             yield Static(
-                "Scan everything at once — junk, updates, registry orphans, stale "
-                "downloads, disk space, startup — then fix it from right here.",
+                "Scan everything at once - junk, updates, registry orphans, stale "
+                "downloads, disk space, startup - then fix it from right here.",
                 classes="subtle",
             )
             with Horizontal(classes="actions"):
                 yield Button("Run checkup", id="run-checkup", variant="primary")
+                yield Button("Run agent", id="run-agent")
+            yield Static("", id="ai-summary", classes="subtle")
             yield Vertical(id="checkup-results")
         yield Panel(Static("Reading volumes…", id="vol-body"), title="Volumes")
 
     def on_mount(self) -> None:
         self._findings: dict[str, Finding] = {}
+        self.query_one("#ai-summary", Static).display = False  # shown only when the AI summarizes
         self._render_volumes()  # fast (psutil), no worker needed
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
+        nav_key = getattr(event.button, "_nav_key", None)
+        if nav_key:  # an anomaly "Review…" button - jump to the owning screen
+            await self.app.show(nav_key)
+            return
         bid = event.button.id or ""
         if bid == "run-checkup":
-            event.button.disabled = True
+            self._set_buttons(False)
+            self._set_ai_summary(None)
             results = self.query_one("#checkup-results", Vertical)
             await results.remove_children()
             await results.mount(Static("[dim]Running checkup…[/dim]", classes="subtle"))
             self.run_checkup_worker()
+        elif bid == "run-agent":
+            self._run_agent_flow()
         elif bid.startswith("fix-"):
             domain = bid.removeprefix("fix-")
             if domain in _DIRECT_FIX_LABELS:
@@ -93,33 +107,137 @@ class HomeView(BaseView):
         except Exception:
             logger.exception("Home: checkup failed")
             findings = []
-        self.app.call_from_thread(self._show_findings, findings)
-
-    async def _show_findings(self, findings: list[Finding]) -> None:
         try:
-            self.query_one("#run-checkup", Button).disabled = False
+            anomalies = anomaly.detect()
+            anomaly.record_snapshot()  # keep the baseline fresh from interactive use
+        except Exception:
+            logger.exception("Home: anomaly detection failed")
+            anomalies = []
+        self.app.call_from_thread(self._show_findings, findings, anomalies)
+
+    def _set_buttons(self, enabled: bool) -> None:
+        for bid in ("run-checkup", "run-agent"):
+            try:
+                self.query_one(f"#{bid}", Button).disabled = not enabled
+            except Exception:
+                pass
+
+    # ------------------------------------------------------------ proactive run
+    @work
+    async def _run_agent_flow(self) -> None:
+        ok = await self.app.push_screen_wait(ConfirmModal(
+            "Run a maintenance pass? Sifty checks everything and cleans low-risk "
+            "cache/temp junk to the Recycle Bin (undoable from Reports).",
+            confirm_label="Run",
+        ))
+        if not ok:
+            return
+        self._set_buttons(False)
+        self._set_ai_summary(None)
+        results = self.query_one("#checkup-results", Vertical)
+        await results.remove_children()
+        await results.mount(Static("[dim]Running maintenance agent…[/dim]", classes="subtle"))
+        self.run_agent_worker()
+
+    @work(thread=True, exclusive=True, group="home-checkup")
+    def run_agent_worker(self) -> None:
+        try:
+            # Suppress the toast: the result is shown right here on screen.
+            result = agent_run.run_agent(apply=True, notify_fn=lambda _t, _m: True)
+        except Exception:
+            logger.exception("Home: agent run failed")
+            result = None
+        self.app.call_from_thread(self._show_agent_result, result)
+
+    async def _show_agent_result(self, result) -> None:
+        self._set_buttons(True)
+        if result is None:
+            try:
+                results = self.query_one("#checkup-results", Vertical)
+                await results.remove_children()
+                await results.mount(Static("Agent run failed - see `sifty logs`.", classes="subtle"))
+            except Exception:
+                pass
+            return
+        await self._show_findings(result.findings, result.anomalies)
+        try:
+            results = self.query_one("#checkup-results", Vertical)
+        except Exception:
+            return
+        if result.auto_fixed:
+            a = result.auto_fixed
+            await results.mount(Static(
+                f"[green]✓[/green] Auto-cleaned {a.items:,} items "
+                f"({human_size(a.bytes_freed)}) to the Recycle Bin · undo from Reports",
+                classes="status"))
+        if result.elevated_skipped:
+            await results.mount(Static(
+                f"[dim]{len(result.elevated_skipped)} admin-only categor(y/ies) left alone; "
+                f"use Elevate (F2) to include them.[/dim]", classes="status"))
+
+    async def _show_findings(self, findings: list[Finding],
+                             anomalies: list[Anomaly] | None = None) -> None:
+        anomalies = anomalies or []
+        self._set_buttons(True)
+        try:
             results = self.query_one("#checkup-results", Vertical)
         except Exception:
             return  # view was navigated away mid-scan
         self._findings = {f.domain: f for f in findings}
         await results.remove_children()
         if not findings:
-            await results.mount(Static("Checkup failed — see `sifty logs`.", classes="subtle"))
+            await results.mount(Static("Checkup failed - see `sifty logs`.", classes="subtle"))
             return
         for f in findings:
             dot = _SEVERITY_DOT.get(f.severity, "")
             row = Horizontal(classes="finding-row", id=f"finding-{f.domain}")
             await results.mount(row)
             await row.mount(
-                Static(f"{dot} [b]{f.label}[/b] — {f.summary}", classes="finding-text")
+                Static(f"{dot} [b]{f.label}[/b] - {f.summary}", classes="finding-text")
             )
             if f.severity != "ok" and f.action_key:
                 label = _DIRECT_FIX_LABELS.get(f.domain, f.action_label or "Review…")
                 await row.mount(Button(label, id=f"fix-{f.domain}", classes="fix"))
-        issues = sum(1 for f in findings if f.severity != "ok")
+        for i, a in enumerate(anomalies):
+            dot = _SEVERITY_DOT.get(a.severity, "")
+            row = Horizontal(classes="finding-row", id=f"anomaly-{i}")
+            await results.mount(row)
+            await row.mount(Static(f"{dot} [b]Change noticed[/b] - {a.summary}", classes="finding-text"))
+            if a.action_key:  # deep-link to the owning screen; selection is never an action
+                btn = Button("Review…", classes="fix")
+                btn._nav_key = a.action_key
+                await row.mount(btn)
+        issues = sum(1 for f in findings if f.severity != "ok") + len(anomalies)
         verdict = (f"[b]{issues}[/b] item(s) worth a look." if issues
-                   else "[green]All clear — nothing needs attention.[/green]")
+                   else "[green]All clear - nothing needs attention.[/green]")
         await results.mount(Static(verdict, classes="status"))
+        # Only ping the local model when there's something to summarize.
+        if issues:
+            self.run_ai_summary_worker(findings, anomalies)
+
+    # -------------------------------------------------------------- AI summary
+    @work(thread=True, exclusive=True, group="home-aisummary")
+    def run_ai_summary_worker(self, findings: list[Finding], anomalies: list[Anomaly]) -> None:
+        try:
+            client = OllamaClient.from_config()
+            summary = advisor.summarize_checkup(client, findings, anomalies) \
+                if client.is_available() else None
+        except Exception:
+            logger.exception("Home: AI summary failed")
+            summary = None
+        self.app.call_from_thread(self._set_ai_summary, summary)
+
+    def _set_ai_summary(self, summary: str | None) -> None:
+        try:
+            banner = self.query_one("#ai-summary", Static)
+        except Exception:
+            return
+        if summary:
+            banner.update(Markdown(summary))
+            banner.display = True
+        else:
+            banner.update("")
+            banner.display = False
 
     # -------------------------------------------------------------- direct fix
     @work
@@ -177,7 +295,7 @@ class HomeView(BaseView):
             row = self.query_one(f"#finding-{domain}", Horizontal)
         except Exception:
             return  # navigated away
-        row.query_one(".finding-text", Static).update(f"[b]{label}[/b] — {suffix}")
+        row.query_one(".finding-text", Static).update(f"[b]{label}[/b] - {suffix}")
         if drop_button:
             for btn in row.query(Button):
                 btn.remove()

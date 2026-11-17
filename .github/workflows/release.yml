@@ -1,7 +1,7 @@
 name: Release
 
 # Fires when you publish a GitHub Release (from a tag like v0.6.0).
-# Publishes the package to PyPI via Trusted Publishing (OIDC — no API token
+# Publishes the package to PyPI via Trusted Publishing (OIDC, no API token
 # stored anywhere) and attaches a standalone sifty.exe to the release.
 on:
   release:
@@ -18,8 +18,8 @@ jobs:
     permissions:
       id-token: write       # OIDC token for Trusted Publishing
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Build sdist + wheel
@@ -32,11 +32,11 @@ jobs:
           skip-existing: true   # don't fail a re-run if the version is already up
 
   windows-exe:
-    name: Build Windows exe
+    name: Build Windows exe + installer
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install + PyInstaller
@@ -46,11 +46,20 @@ jobs:
       - name: Build sifty.exe
         run: >
           pyinstaller --onefile --name sifty --paths src --console
+          --icon packaging/installer/sifty.ico
           --collect-submodules win32com --hidden-import win32timezone
+          --collect-submodules textual
+          --add-data "src/sifty/tui/styles.tcss;sifty/tui"
           packaging/exe_entry.py
       - name: Smoke-test the exe
         run: ./dist/sifty.exe version
-      - name: Attach exe to the release
+      - name: Build sifty-setup.exe (Inno Setup wizard)
+        run: |
+          $ver = "${{ github.event.release.tag_name }}" -replace '^v', ''
+          choco install innosetup --no-progress -y
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc /DAppVersion=$ver packaging\installer\sifty.iss
+      - name: Attach exe + installer to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload ${{ github.event.release.tag_name }} dist/sifty.exe --clobber
+        run: gh release upload ${{ github.event.release.tag_name }} dist/sifty.exe dist/sifty-setup.exe --clobber

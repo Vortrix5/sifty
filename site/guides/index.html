@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sifty guides - Windows cleanup and maintenance how-tos</title>
+  <meta name="description" content="Practical, no-nonsense guides for cleaning up Windows: delete node_modules, shrink a bloated WSL2 disk, clear the winget cache, find duplicate files, and more.">
+  <link rel="canonical" href="https://sifty.tech/guides/">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sifty guides - Windows cleanup and maintenance how-tos">
+  <meta property="og:description" content="Practical guides for cleaning up Windows: node_modules, WSL2 disks, the winget cache, duplicate files, and more.">
+  <meta property="og:url" content="https://sifty.tech/guides/">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><span>Guides</span>
+  </nav>
+
+  <h1 class="doc-title">Guides</h1>
+  <p class="doc-lede">
+    Short, practical walkthroughs for the disk-space problems Windows machines
+    actually run into. Each one explains what is going on first, then shows the
+    fast way to fix it with Sifty.
+  </p>
+  <p class="doc-meta">Read-only and dry-run examples throughout. Nothing here deletes anything without asking.</p>
+
+  <div class="guides-grid">
+    <a class="guide-card" href="delete-node-modules-windows.html">
+      <h3>Delete every node_modules on Windows</h3>
+      <p>Reclaim gigabytes of stale dependency folders across all your projects in one pass.</p>
+    </a>
+    <a class="guide-card" href="shrink-wsl2-vhdx.html">
+      <h3>Shrink a bloated WSL2 disk (ext4.vhdx)</h3>
+      <p>Why WSL2 keeps the space after you delete files, and how to compact the virtual disk safely.</p>
+    </a>
+    <a class="guide-card" href="what-to-delete-c-drive.html">
+      <h3>What is safe to delete on your C: drive</h3>
+      <p>A plain-English tour of the junk Windows piles up, and what you can actually clear.</p>
+    </a>
+    <a class="guide-card" href="find-duplicate-files-windows.html">
+      <h3>Find duplicate files on Windows for free</h3>
+      <p>Hash-based, hardlink-aware duplicate detection with no upsell and no paid tier.</p>
+    </a>
+    <a class="guide-card" href="clean-winget-cache.html">
+      <h3>Where the winget cache lives and how to clean it</h3>
+      <p>Find the leftover installer downloads winget keeps, and clear them safely.</p>
+    </a>
+    <a class="guide-card" href="remove-leftover-files-after-uninstall.html">
+      <h3>Remove leftover files after uninstalling</h3>
+      <p>Track down the folders and shortcuts an uninstaller leaves behind in AppData.</p>
+    </a>
+    <a class="guide-card" href="windows-temp-files-safe-to-delete.html">
+      <h3>Which Windows temp files are safe to delete</h3>
+      <p>What the temp folders really hold, and how to clear them without breaking anything.</p>
+    </a>
+    <a class="guide-card" href="../alternatives/ccleaner.html">
+      <h3>Sifty vs CCleaner</h3>
+      <p>An open-source CCleaner alternative, compared honestly, feature by feature.</p>
+    </a>
+    <a class="guide-card" href="../alternatives/bleachbit.html">
+      <h3>Sifty vs BleachBit</h3>
+      <p>Two free, open-source cleaners compared. Where each wins, and why you might run both.</p>
+    </a>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Optional local git hook via the pre-commit framework (https://pre-commit.com).
+# Python-native alternative to Husky. Fully opt-in: nothing runs unless a
+# contributor chooses to enable it after a dev install:
+#
+#   pip install -e ".[dev]"
+#   pre-commit install
+#
+# It runs ruff (the same lint CI runs) on changed files before each commit, so
+# style issues surface locally instead of failing the PR. Tests are left to CI.
+# Skip in a pinch with `git commit --no-verify`.
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint)
+        entry: ruff check --force-exclude
+        language: python
+        additional_dependencies: ["ruff>=0.4"]
+        types_or: [python, pyi]
+        require_serial: true

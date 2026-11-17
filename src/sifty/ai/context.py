@@ -1,7 +1,7 @@
 """Machine context snapshot for the AI advisor.
 
-Builds a compact, *metadata-only* description of the current system state —
-volumes, junk totals, recent history — that is injected into the AI system
+Builds a compact, *metadata-only* description of the current system state -
+volumes, junk totals, recent history - that is injected into the AI system
 prompt so it can give advice that is specific to *this* machine.
 
 Rules that must never change:
@@ -15,7 +15,8 @@ from ..console import human_size
 
 
 def build(*, include_junk: bool = True, include_volumes: bool = True,
-          include_history: bool = True) -> str:
+          include_history: bool = True, include_preferences: bool = True,
+          include_anomalies: bool = True) -> str:
     """Return a Markdown-formatted system context string for injection into prompts."""
     sections: list[str] = []
 
@@ -29,8 +30,18 @@ def build(*, include_junk: bool = True, include_volumes: bool = True,
         if section:
             sections.append(section)
 
+    if include_anomalies:
+        section = _anomaly_section()
+        if section:
+            sections.append(section)
+
     if include_history:
         section = _history_section()
+        if section:
+            sections.append(section)
+
+    if include_preferences:
+        section = _preferences_section()
         if section:
             sections.append(section)
 
@@ -88,5 +99,38 @@ def _history_section() -> str:
         f"{human_size(summ['bytes_freed'])} reclaimed total"
     ]
     for r in runs[:3]:
-        lines.append(f"- {r.ts[:10]}: {r.action} — {human_size(r.bytes_freed)} freed")
+        lines.append(f"- {r.ts[:10]}: {r.action} - {human_size(r.bytes_freed)} freed")
+    return "\n".join(lines)
+
+
+def _anomaly_section() -> str:
+    """Recent notable changes (disk drops, junk growth, new startup entries)."""
+    try:
+        from ..core import anomaly
+        found = anomaly.detect()
+    except Exception:
+        return ""
+    if not found:
+        return ""
+    lines = ["**Recent changes noticed:**"]
+    for a in found:
+        lines.append(f"- {a.summary}")
+    return "\n".join(lines)
+
+
+def _preferences_section() -> str:
+    """What this user routinely does / declines, so advice matches their habits."""
+    try:
+        from ..core.ai_memory import learned_preferences
+        prefs = learned_preferences()
+    except Exception:
+        return ""
+    if prefs.is_empty:
+        return ""
+    lines = ["**Learned preferences:**"]
+    if prefs.always_clean:
+        lines.append("- Routinely cleans: " + ", ".join(prefs.always_clean))
+    skips = prefs.often_skipped or prefs.avoided_tools
+    if skips:
+        lines.append("- Tends to decline: " + ", ".join(skips))
     return "\n".join(lines)

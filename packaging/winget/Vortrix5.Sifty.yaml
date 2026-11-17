@@ -1,4 +1,4 @@
-# Version manifest — see https://aka.ms/winget-manifest.version.1.6.0.schema.json
+# Version manifest, see https://aka.ms/winget-manifest.version.1.6.0.schema.json
 PackageIdentifier: Vortrix5.Sifty
 PackageVersion: 0.6.0
 DefaultLocale: en-US

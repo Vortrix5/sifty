@@ -56,7 +56,7 @@ class ReportsView(BaseView):
         for r in runs:
             table.add_row(
                 r.ts, r.action, r.detail, f"{r.items:,}",
-                human_size(r.bytes_freed), str(r.restorable) if r.restorable else "—",
+                human_size(r.bytes_freed), str(r.restorable) if r.restorable else "-",
             )
         self._status(f"{len(runs)} recent runs" if runs else "No history yet.")
 

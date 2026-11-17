@@ -1,6 +1,6 @@
 {
     "version": "0.6.0",
-    "description": "AI-assisted Windows maintenance CLI/TUI — sift junk, analyze disks, manage apps, updates and files.",
+    "description": "Windows maintenance CLI/TUI: sift junk, analyze disks, manage apps, updates and files.",
     "homepage": "https://github.com/Vortrix5/sifty",
     "license": "MIT",
     "architecture": {

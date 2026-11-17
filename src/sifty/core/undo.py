@@ -1,4 +1,4 @@
-"""Undo the last clean — restore its trashed items from the Recycle Bin."""
+"""Undo the last clean - restore its trashed items from the Recycle Bin."""
 
 from __future__ import annotations
 

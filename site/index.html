@@ -3,17 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sifty · sift the junk from the keep</title>
-  <meta name="description" content="An open source Windows maintenance CLI and TUI. Cleans junk, finds duplicates, manages apps and updates, purges dev clutter. Dry-run by default, Recycle Bin only, with undo.">
-  <link rel="canonical" href="https://vortrix5.github.io/sifty/">
+  <title>Sifty - sift the junk from the keep</title>
+  <meta name="description" content="An open source Windows maintenance CLI and TUI that cleans junk, finds duplicates, manages apps and updates, and purges dev clutter. Dry-run by default, Recycle Bin only, with undo.">
+  <link rel="canonical" href="https://sifty.tech/">
   <link rel="icon" type="image/png" href="assets/logo.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Sifty · sift the junk from the keep">
-  <meta property="og:description" content="Open source Windows cleanup in your terminal. Dry-run by default, Recycle Bin only, undo included. Optional AI that runs locally and never touches your files.">
-  <meta property="og:url" content="https://vortrix5.github.io/sifty/">
-  <meta property="og:image" content="https://vortrix5.github.io/sifty/assets/social-preview.png">
+  <meta property="og:title" content="Sifty - sift the junk from the keep">
+  <meta property="og:description" content="Open source Windows cleanup in your terminal. Dry-run by default, deletes only to the Recycle Bin, and every clean can be undone. The optional AI runs locally and never touches your files.">
+  <meta property="og:url" content="https://sifty.tech/">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sifty - sift the junk from the keep">
+  <meta name="twitter:description" content="Open source Windows cleanup in your terminal. Dry-run by default, deletes only to the Recycle Bin, and every clean can be undone.">
+  <meta name="twitter:image" content="https://sifty.tech/assets/social-preview.png">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Sifty",
+    "operatingSystem": "Windows 10, Windows 11",
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "System maintenance utility",
+    "description": "An open source Windows maintenance CLI and TUI that cleans junk, finds duplicate files, manages apps and updates, and purges developer clutter. Dry-run by default, deletes only to the Recycle Bin, and every clean can be undone.",
+    "url": "https://sifty.tech/",
+    "downloadUrl": "https://github.com/Vortrix5/sifty/releases/latest",
+    "softwareVersion": "0.9.0",
+    "license": "https://opensource.org/licenses/MIT",
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "screenshot": "https://sifty.tech/assets/demo.gif",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
 </head>
 <body>
 
@@ -26,26 +48,28 @@
     <a href="#features">Features</a>
     <a href="#demo">Demo</a>
     <a href="#safety">Safety</a>
-    <a href="#tui">TUI</a>
+    <a href="#compare">Compare</a>
     <a href="#install">Install</a>
-    <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
-      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span>GitHub</span>
-    </a>
+    <a href="guides/">Guides</a>
   </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
 </header>
 
 <main id="top">
 
-  <!-- ====================== HERO ====================== -->
+  <!-- Hero -->
   <section class="hero">
     <div class="hero-copy">
       <h1 class="wordmark">sifty<span class="caret" aria-hidden="true"></span></h1>
       <p class="tagline">sift the junk from the keep</p>
       <p class="lede">
-        Open source Windows cleanup that lives in your terminal.
-        Junk, duplicates, apps, updates, dev clutter.
-        Previews first. Recycle Bin always. Undo built in.
+        An open source cleanup tool for Windows that lives in your terminal.
+        It finds junk files, duplicates, leftover apps and dev clutter, previews
+        everything before touching it, and only ever deletes to the Recycle Bin,
+        so a clean can always be undone.
       </p>
       <div class="install-pill">
         <code>pipx install sifty</code>
@@ -55,7 +79,7 @@
         <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
         <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
       </div>
-      <p class="hero-fine">Windows 10/11 · Python 3.11+ or standalone exe · MIT</p>
+      <p class="hero-fine">Works on Windows 10 and 11 with Python 3.11+, or grab the standalone exe. MIT licensed.</p>
     </div>
 
     <div class="hero-term">
@@ -67,7 +91,7 @@
         <div class="term-body" id="heroTerm">
           <!-- Static transcript (replaced by the typed animation when JS runs) -->
           <div><span class="c-p">PS C:\&gt;</span> sifty junk scan</div>
-          <pre class="t-out">                                    <span class="c-d t-i">Junk scan</span>
+          <pre class="t-out desktop-only">                                    <span class="c-d t-i">Junk scan</span>
 <span class="c-d">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓</span>
 <span class="c-d">┃</span> <span class="c-b">Category                          </span> <span class="c-d">┃</span> <span class="c-b">Key                 </span> <span class="c-d">┃</span> <span class="c-b"> Files</span> <span class="c-d">┃</span> <span class="c-b">    Size</span> <span class="c-d">┃</span>
 <span class="c-d">┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩</span>
@@ -87,6 +111,20 @@
 <span class="c-d">└────────────────────────────────────┴──────────────────────┴────────┴──────────┘</span>
 
 Run <span class="c-cy">sifty junk clean</span> to preview removal (dry-run by default).</pre>
+          <pre class="t-out mobile-only">           <span class="c-d t-i">Junk scan</span>
+<span class="c-d">┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓</span>
+<span class="c-d">┃</span> <span class="c-b">Category         </span> <span class="c-d">┃</span> <span class="c-b">    Size</span> <span class="c-d">┃</span>
+<span class="c-d">┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩</span>
+<span class="c-d">│</span> User temp files   <span class="c-d">│</span> 537.0 MB <span class="c-d">│</span>
+<span class="c-d">│</span> Thumbnail cache   <span class="c-d">│</span>  13.1 MB <span class="c-d">│</span>
+<span class="c-d">│</span> Browser caches    <span class="c-d">│</span>   1.2 GB <span class="c-d">│</span>
+<span class="c-d">│</span> WinGet cache      <span class="c-d">│</span> 189.2 KB <span class="c-d">│</span>
+<span class="c-d">│</span> OneDrive logs     <span class="c-d">│</span>  83.1 MB <span class="c-d">│</span>
+<span class="c-d">├───────────────────┼──────────┤</span>
+<span class="c-d">│</span> <span class="c-b">Total reclaimable</span> <span class="c-d">│</span> <span class="c-b">  1.8 GB</span> <span class="c-d">│</span>
+<span class="c-d">└───────────────────┴──────────┘</span>
+
+Run <span class="c-cy">sifty junk clean</span> to preview removal.</pre>
           <div><span class="c-p">PS C:\&gt;</span> sifty junk clean --apply</div>
           <pre class="t-out">Found <span class="c-b">27,803</span> items totalling <span class="c-b">1.8 GB</span>.
 Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
@@ -100,41 +138,41 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
     </div>
   </section>
 
-  <!-- ====================== FEATURES ====================== -->
+  <!-- Features -->
   <section id="features" class="section reveal">
     <h2>what it sifts</h2>
     <div class="grid grid-3">
       <article class="card">
         <h3 class="card-cmd">$ sifty checkup</h3>
-        <p>One read-only scan of everything. Nothing gets touched.</p>
+        <p>One read-only scan across everything, without touching a single file.</p>
       </article>
       <article class="card">
         <h3 class="card-cmd">$ sifty junk</h3>
-        <p>Temp files, browser caches, crash dumps. 11+ categories.</p>
+        <p>Clears temp files, browser caches, crash dumps and more than ten other categories.</p>
       </article>
       <article class="card">
         <h3 class="card-cmd">$ sifty disk</h3>
-        <p>Volume gauges, biggest files, NTFS-aware duplicate finder.</p>
+        <p>Shows how full each volume is, lists your biggest files and runs an NTFS-aware duplicate scan.</p>
       </article>
       <article class="card">
         <h3 class="card-cmd">$ sifty apps</h3>
-        <p>Uninstall via winget, then catch what the uninstaller forgot.</p>
+        <p>Uninstalls through winget, then sweeps up whatever the uninstaller forgot.</p>
       </article>
       <article class="card">
         <h3 class="card-cmd">$ sifty purge</h3>
-        <p>node_modules, __pycache__, orphaned worktrees, WSL2 disks.</p>
+        <p>Reclaims space from node_modules, __pycache__, orphaned worktrees and WSL2 disks.</p>
       </article>
       <article class="card">
         <h3 class="card-cmd">$ sifty startup</h3>
-        <p>Boot bloat and safe-to-disable services. All reversible.</p>
+        <p>Trims boot bloat and safe-to-disable services, and everything can be turned back on.</p>
       </article>
     </div>
   </section>
 
-  <!-- ====================== DEMO TABS ====================== -->
+  <!-- Demo tabs -->
   <section id="demo" class="section reveal">
     <h2>see it run</h2>
-    <p class="section-sub">Straight from the terminal. Pick a tab.</p>
+    <p class="section-sub">Real output, straight from the terminal.</p>
 
     <div class="tabs" role="tablist" aria-label="Command demos">
       <button class="tab is-active" role="tab" aria-selected="true" data-tab="disk">Disk</button>
@@ -150,13 +188,20 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
 
       <div class="term-body" data-panel="disk">
         <div><span class="c-p">PS C:\&gt;</span> sifty disk volumes</div>
-        <pre class="t-out">                         <span class="c-d t-i">Volumes</span>
+        <pre class="t-out desktop-only">                         <span class="c-d t-i">Volumes</span>
 <span class="c-d">┏━━━━━━━┳━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┓</span>
 <span class="c-d">┃</span> <span class="c-b">Drive</span> <span class="c-d">┃</span> <span class="c-b">FS  </span> <span class="c-d">┃</span> <span class="c-b">    Used</span> <span class="c-d">┃</span> <span class="c-b">   Free</span> <span class="c-d">┃</span> <span class="c-b">   Total</span> <span class="c-d">┃</span> <span class="c-b">Used %</span> <span class="c-d">┃</span>
 <span class="c-d">┡━━━━━━━╇━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━┩</span>
 <span class="c-d">│</span> C:\   <span class="c-d">│ NTFS │</span> 177.4 GB <span class="c-d">│</span> 44.7 GB <span class="c-d">│</span> 222.0 GB <span class="c-d">│</span> <span class="c-y">   80%</span> <span class="c-d">│</span>
 <span class="c-d">│</span> E:\   <span class="c-d">│ NTFS │</span> 847.6 GB <span class="c-d">│</span> 83.9 GB <span class="c-d">│</span> 931.5 GB <span class="c-d">│</span> <span class="c-r">   91%</span> <span class="c-d">│</span>
 <span class="c-d">└───────┴──────┴──────────┴─────────┴──────────┴────────┘</span></pre>
+        <pre class="t-out mobile-only">                <span class="c-d t-i">Volumes</span>
+<span class="c-d">┏━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━┓</span>
+<span class="c-d">┃</span> <span class="c-b">Drive</span> <span class="c-d">┃</span> <span class="c-b">   Free</span> <span class="c-d">┃</span> <span class="c-b">   Total</span> <span class="c-d">┃</span> <span class="c-b">Used %</span> <span class="c-d">┃</span>
+<span class="c-d">┡━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━┩</span>
+<span class="c-d">│</span> C:\   <span class="c-d">│</span> 44.7 GB <span class="c-d">│</span> 222.0 GB <span class="c-d">│</span> <span class="c-y">   80%</span> <span class="c-d">│</span>
+<span class="c-d">│</span> E:\   <span class="c-d">│</span> 83.9 GB <span class="c-d">│</span> 931.5 GB <span class="c-d">│</span> <span class="c-r">   91%</span> <span class="c-d">│</span>
+<span class="c-d">└───────┴─────────┴──────────┴────────┘</span></pre>
         <div><span class="c-p">PS C:\&gt;</span> sifty disk duplicates D:\Photos</div>
         <pre class="t-out">Found <span class="c-b">316</span> duplicate groups.
 
@@ -194,7 +239,7 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
     </div>
   </section>
 
-  <!-- ====================== SAFETY ====================== -->
+  <!-- Safety -->
   <section id="safety" class="section reveal">
     <h2>hard to misuse, on purpose</h2>
     <p class="section-sub">Most cleaners ask for your trust. Sifty is built so it doesn't need much.</p>
@@ -207,17 +252,17 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
       <article class="card card-num">
         <span class="num">02</span>
         <h3>Recycle Bin, always</h3>
-        <p>Permanent delete is not a code path. <code>sifty undo</code> restores.</p>
+        <p>Permanent delete is not a code path, and <code>sifty undo</code> brings things back.</p>
       </article>
       <article class="card card-num">
         <span class="num">03</span>
         <h3>Protected paths</h3>
-        <p>Windows, Program Files, your profile root. Refused. No override exists.</p>
+        <p>Windows, Program Files and your profile root are refused outright. No override exists.</p>
       </article>
       <article class="card card-num">
         <span class="num">04</span>
         <h3>Audit log</h3>
-        <p>Every applied deletion is logged with a timestamp. Receipts.</p>
+        <p>Every applied deletion is logged with a timestamp, so you always have receipts.</p>
       </article>
     </div>
 
@@ -241,7 +286,41 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
     </div>
   </section>
 
-  <!-- ====================== TUI ====================== -->
+  <!-- Compare -->
+  <section id="compare" class="section reveal">
+    <h2>how it compares</h2>
+    <p class="section-sub">An honest look at where Sifty fits next to the usual Windows cleanup tools.</p>
+    <div class="table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr><th>Feature</th><th>Sifty</th><th>CCleaner</th><th>BleachBit</th><th>Revo</th><th>WinDirStat</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Junk &amp; cache cleaning</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td><td class="cmp-mid">~</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Disk usage analysis</td><td class="cmp-yes">&#10003;</td><td class="cmp-mid">~</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-yes">&#10003;</td></tr>
+          <tr><td>Duplicate finder</td><td class="cmp-yes">&#10003;</td><td class="cmp-mid">paid</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>App uninstall + leftovers</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>App updates</td><td class="cmp-yes">&#10003;</td><td class="cmp-mid">paid</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Startup manager</td><td class="cmp-yes">&#10003;</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Dev cleanup (node_modules, WSL2)</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Local AI assistant</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Scriptable (JSON output)</td><td class="cmp-yes">&#10003;</td><td class="cmp-no">&#10007;</td><td class="cmp-mid">CLI</td><td class="cmp-no">&#10007;</td><td class="cmp-no">&#10007;</td></tr>
+          <tr><td>Recycle Bin + undo</td><td class="cmp-yes">&#10003;</td><td class="cmp-mid">~</td><td class="cmp-no">&#10007;</td><td class="cmp-mid">~</td><td class="cmp-mid">n/a</td></tr>
+          <tr><td>Open source</td><td class="cmp-yes">&#10003; MIT</td><td class="cmp-no">&#10007;</td><td class="cmp-yes">&#10003; GPL</td><td class="cmp-no">&#10007;</td><td class="cmp-yes">&#10003;</td></tr>
+          <tr><td>Price</td><td class="cmp-yes">Free</td><td class="cmp-mid">Freemium</td><td class="cmp-yes">Free</td><td class="cmp-mid">Freemium</td><td class="cmp-yes">Free</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="section-foot">
+      BleachBit is the closest open-source option: it is cross-platform and can
+      securely shred files, where Sifty stays Windows-only but adds undo,
+      duplicates, app management and developer cleanups. Full breakdowns:
+      <a href="alternatives/ccleaner.html">vs CCleaner</a> &middot;
+      <a href="alternatives/bleachbit.html">vs BleachBit</a>.
+    </p>
+  </section>
+
+  <!-- TUI -->
   <section id="tui" class="section reveal">
     <h2>prefer buttons? sifty tui</h2>
     <p class="section-sub">The same engine, full screen.</p>
@@ -257,32 +336,32 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
         <li>Seven screens: Home, Clean, Disk, Apps, Monitor, Reports, AI</li>
         <li><kbd>Ctrl+P</kbd> palette, <kbd>F2</kbd> to elevate, <kbd>Space</kbd> to bulk-select</li>
         <li>Checkup findings come with one-button fixes</li>
-        <li>Reports tracks space reclaimed, undo included</li>
+        <li>The Reports screen tracks reclaimed space and includes undo</li>
       </ul>
     </div>
   </section>
 
-  <!-- ====================== AI ====================== -->
+  <!-- AI -->
   <section id="ai" class="section reveal">
     <h2>ai that can look, not touch</h2>
-    <p class="section-sub">Optional, and unusually boring about your privacy.</p>
+    <p class="section-sub">Entirely optional, and deliberately limited in what it can see and do.</p>
     <div class="ai-row">
       <div>
         <h3>Runs on your machine</h3>
-        <p><a href="https://ollama.com" rel="noopener">Ollama</a> over local HTTP. Nothing leaves your computer.</p>
+        <p>Talks to <a href="https://ollama.com" rel="noopener">Ollama</a> over local HTTP, so nothing ever leaves your computer.</p>
       </div>
       <div>
         <h3>Sees metadata only</h3>
-        <p>Names, sizes and paths. Never file contents.</p>
+        <p>It gets names, sizes and paths, never the contents of your files.</p>
       </div>
       <div>
         <h3>Can't delete anything</h3>
-        <p>It proposes. You click Run or Skip.</p>
+        <p>It can suggest a cleanup, but you decide whether to run or skip it.</p>
       </div>
     </div>
   </section>
 
-  <!-- ====================== INSTALL ====================== -->
+  <!-- Install -->
   <section id="install" class="section reveal">
     <h2>get sifty</h2>
     <div class="grid grid-2 install-grid">
@@ -294,7 +373,7 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
       <article class="card install-card">
         <h3>Standalone exe</h3>
         <div class="cmd-line"><a class="btn btn-primary btn-small" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a></div>
-        <p>No Python needed. One file from the latest release.</p>
+        <p>A single file from the latest release, no Python needed.</p>
       </article>
       <article class="card install-card">
         <h3>Scoop</h3>
@@ -305,10 +384,10 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
       <article class="card install-card">
         <h3>winget</h3>
         <div class="cmd-line"><code>winget install Vortrix5.Sifty</code><button class="copy-btn" data-copy="winget install Vortrix5.Sifty" aria-label="Copy winget command">copy</button></div>
-        <p>Fresh submission, may still be rolling out.</p>
       </article>
     </div>
-    <p class="section-foot">First run: <code>sifty doctor</code>, then <code>sifty checkup</code>. Both read-only.</p>
+    <p class="section-foot">On first run, try <code>sifty doctor</code> and then <code>sifty checkup</code>. Both are read-only.</p>
+    <p class="section-foot">Free Windows code signing provided by <a href="https://about.signpath.io/" rel="noopener">SignPath.io</a>, certificate by <a href="https://signpath.org/" rel="noopener">SignPath Foundation</a>.</p>
   </section>
 
 </main>
@@ -317,9 +396,11 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
   <div class="footer-inner">
     <div class="footer-brand">
       <img src="assets/logo.png" alt="" width="22" height="22">
-      <span>sifty · MIT licensed · © 2026 Amine Zouaoui</span>
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
     </div>
     <nav class="footer-links" aria-label="Project links">
+      <a href="guides/">Guides</a>
+      <a href="alternatives/ccleaner.html">vs CCleaner</a>
       <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
       <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
       <a href="https://github.com/Vortrix5/sifty/blob/main/CHANGELOG.md" rel="noopener">Changelog</a>
@@ -332,7 +413,7 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
 <!-- Animation script for the hero terminal -->
 <template id="heroScript">
   <div data-kind="cmd">sifty junk scan</div>
-  <div data-kind="out"><pre class="t-out">                                    <span class="c-d t-i">Junk scan</span>
+  <div data-kind="out"><pre class="t-out desktop-only">                                    <span class="c-d t-i">Junk scan</span>
 <span class="c-d">┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┓</span>
 <span class="c-d">┃</span> <span class="c-b">Category                          </span> <span class="c-d">┃</span> <span class="c-b">Key                 </span> <span class="c-d">┃</span> <span class="c-b"> Files</span> <span class="c-d">┃</span> <span class="c-b">    Size</span> <span class="c-d">┃</span>
 <span class="c-d">┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━┩</span>
@@ -351,7 +432,20 @@ Move 27,803 items (1.8 GB) to the Recycle Bin? [y/N]: y
 <span class="c-d">│</span> <span class="c-b">Total reclaimable                 </span> <span class="c-d">│                      │</span>        <span class="c-d">│</span> <span class="c-b">  1.8 GB</span> <span class="c-d">│</span>
 <span class="c-d">└────────────────────────────────────┴──────────────────────┴────────┴──────────┘</span>
 
-Run <span class="c-cy">sifty junk clean</span> to preview removal (dry-run by default).</pre></div>
+Run <span class="c-cy">sifty junk clean</span> to preview removal (dry-run by default).</pre><pre class="t-out mobile-only">           <span class="c-d t-i">Junk scan</span>
+<span class="c-d">┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┓</span>
+<span class="c-d">┃</span> <span class="c-b">Category         </span> <span class="c-d">┃</span> <span class="c-b">    Size</span> <span class="c-d">┃</span>
+<span class="c-d">┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━┩</span>
+<span class="c-d">│</span> User temp files   <span class="c-d">│</span> 537.0 MB <span class="c-d">│</span>
+<span class="c-d">│</span> Thumbnail cache   <span class="c-d">│</span>  13.1 MB <span class="c-d">│</span>
+<span class="c-d">│</span> Browser caches    <span class="c-d">│</span>   1.2 GB <span class="c-d">│</span>
+<span class="c-d">│</span> WinGet cache      <span class="c-d">│</span> 189.2 KB <span class="c-d">│</span>
+<span class="c-d">│</span> OneDrive logs     <span class="c-d">│</span>  83.1 MB <span class="c-d">│</span>
+<span class="c-d">├───────────────────┼──────────┤</span>
+<span class="c-d">│</span> <span class="c-b">Total reclaimable</span> <span class="c-d">│</span> <span class="c-b">  1.8 GB</span> <span class="c-d">│</span>
+<span class="c-d">└───────────────────┴──────────┘</span>
+
+Run <span class="c-cy">sifty junk clean</span> to preview removal.</pre></div>
   <div data-kind="pause" data-ms="1400"></div>
   <div data-kind="cmd">sifty junk clean --apply</div>
   <div data-kind="out"><pre class="t-out">Found <span class="c-b">27,803</span> items totalling <span class="c-b">1.8 GB</span>.</pre></div>

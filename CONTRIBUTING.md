@@ -2,7 +2,7 @@
 
 Thanks for your interest! Sifty is a Windows maintenance tool, so most changes
 need a Windows machine to test on (the unit tests themselves are
-cross-platform — the Windows environment is mocked).
+cross-platform; the Windows environment is mocked).
 
 ## The prime directive: safety
 
@@ -25,6 +25,20 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 .\.venv\Scripts\python.exe -m pytest -q     # should be green (~20s)
 ```
+
+### Git hooks (optional)
+
+If you'd like ruff to lint your changes before each commit (the same check CI
+runs), enable the [pre-commit](https://pre-commit.com) hook after the dev
+install:
+
+```powershell
+pre-commit install
+```
+
+It's entirely optional, nothing runs unless you enable it, and you can skip it
+on a given commit with `git commit --no-verify`. Either way, CI runs the full
+lint and test suite on your PR.
 
 ## Project layout
 

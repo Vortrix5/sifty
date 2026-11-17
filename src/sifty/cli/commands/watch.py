@@ -1,4 +1,4 @@
-"""`sifty watch` — warn (and toast) when a volume runs low on free space."""
+"""`sifty watch` - warn (and toast) when a volume runs low on free space."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def check_cmd(
         return
     detail = " · ".join(f"{v.mountpoint} {human_size(v.free)} free" for v in lows)
     notify.toast("Low disk space", detail)
-    warn(f"Low disk space — {detail}")
+    warn(f"Low disk space - {detail}")
 
 
 @app.command("schedule")

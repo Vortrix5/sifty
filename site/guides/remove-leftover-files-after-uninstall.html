@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to remove leftover files after uninstalling on Windows | Sifty</title>
+  <meta name="description" content="Uninstallers leave folders, shortcuts and broken registry entries behind. Here is how to find and remove the leftover files after uninstalling an app on Windows, safely.">
+  <link rel="canonical" href="https://sifty.tech/guides/remove-leftover-files-after-uninstall.html">
+  <link rel="icon" type="image/png" href="../assets/logo.png">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to remove leftover files after uninstalling on Windows">
+  <meta property="og:description" content="Find and remove the folders, shortcuts and broken registry entries an uninstaller leaves behind on Windows, safely.">
+  <meta property="og:url" content="https://sifty.tech/guides/remove-leftover-files-after-uninstall.html">
+  <meta property="og:image" content="https://sifty.tech/assets/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to remove leftover files after uninstalling on Windows",
+    "description": "Find and remove the folders, shortcuts and broken registry entries an uninstaller leaves behind on Windows, safely.",
+    "author": { "@type": "Person", "name": "Amine Zouaoui" },
+    "image": "https://sifty.tech/assets/social-preview.png",
+    "mainEntityOfPage": "https://sifty.tech/guides/remove-leftover-files-after-uninstall.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://sifty.tech/" },
+      { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://sifty.tech/guides/" },
+      { "@type": "ListItem", "position": 3, "name": "Remove uninstall leftovers", "item": "https://sifty.tech/guides/remove-leftover-files-after-uninstall.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<header class="nav">
+  <a class="nav-brand" href="../">
+    <img src="../assets/logo.png" alt="Sifty logo" width="28" height="28">
+    <span>sifty</span>
+  </a>
+  <nav class="nav-links" aria-label="Site sections">
+    <a href="../#features">Features</a>
+    <a href="../#safety">Safety</a>
+    <a href="../#install">Install</a>
+    <a href="../guides/">Guides</a>
+  </nav>
+  <a class="nav-gh" href="https://github.com/Vortrix5/sifty" rel="noopener">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span>GitHub</span>
+  </a>
+</header>
+
+<main class="doc">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="../">Home</a><span class="sep">/</span><a href="../guides/">Guides</a><span class="sep">/</span><span>Remove uninstall leftovers</span>
+  </nav>
+
+  <h1 class="doc-title">How to remove leftover files after uninstalling on Windows</h1>
+  <p class="doc-lede">
+    Uninstalling an app rarely removes everything. Config folders in AppData,
+    Start Menu shortcuts and dead registry entries get left behind. Here is how to
+    track them down without deleting the wrong thing.
+  </p>
+  <p class="doc-meta">For Windows 10 and 11. Conservative matching, Recycle Bin only.</p>
+
+  <div class="prose">
+    <h2>Where uninstallers leave things</h2>
+    <p>
+      A typical Windows uninstaller removes the program files but ignores the
+      per-user data it created. After uninstalling, you commonly still have:
+    </p>
+    <ul>
+      <li>Settings and cache folders under <code>%LOCALAPPDATA%</code> and <code>%APPDATA%</code></li>
+      <li>Shared data under <code>%ProgramData%</code></li>
+      <li>Orphaned Start Menu shortcuts pointing at programs that no longer exist</li>
+      <li>Broken uninstall entries in the registry, which is why a removed app sometimes still shows up in "Apps &amp; features"</li>
+    </ul>
+
+    <h2>The risk of cleaning leftovers by hand</h2>
+    <div class="note warn">
+      <strong>This is where people break things.</strong> AppData folders are
+      easy to misread. Delete the wrong one and you wipe another app's settings.
+      Generic vendor folders (Microsoft, Adobe, Google) are shared across many
+      programs and should almost never be removed wholesale.
+    </div>
+
+    <h2>Find leftovers with Sifty</h2>
+    <p>
+      Sifty has a dedicated leftover scanner. Give it the app name and it reports
+      what the uninstaller left behind, without removing anything yet:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty apps leftovers "Some App"
+  %LOCALAPPDATA%\SomeApp        <span class="c-b">142 MB</span>
+  %APPDATA%\SomeApp             <span class="c-b">3 MB</span>
+  Start Menu shortcut           <span class="c-d">SomeApp.lnk</span></pre>
+    <p>
+      The matching is deliberately conservative. It normalises the app name, never
+      looks inside <code>Program Files</code> or <code>Windows</code>, skips
+      generic vendor names so it will not nuke a shared folder, and ignores names
+      too short to match safely. When you are happy with the list, add
+      <code>--apply</code> to send it to the Recycle Bin (after a confirm).
+    </p>
+    <p>
+      Better still, when you uninstall through Sifty the leftover scan runs
+      automatically right after:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty apps uninstall "Some App"   <span class="c-d"># then offers to clean leftovers</span></pre>
+
+    <h2>Clear the dead registry entries too</h2>
+    <p>
+      For the apps that still appear in the installed list after they are gone,
+      Sifty can find the broken uninstall entries:
+    </p>
+    <pre class="code-block"><span class="c-p">PS C:\&gt;</span> sifty apps orphans   <span class="c-d"># broken uninstall entries in the registry</span></pre>
+  </div>
+
+  <section class="cta">
+    <h2>Uninstall cleanly</h2>
+    <p>Sifty removes the app and offers to sweep up what the uninstaller forgot.</p>
+    <div class="install-pill">
+      <code>pipx install sifty</code>
+      <button class="copy-btn" data-copy="pipx install sifty" aria-label="Copy install command">copy</button>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Vortrix5/sifty/releases/latest" rel="noopener">Download sifty.exe</a>
+      <a class="btn btn-ghost" href="https://github.com/Vortrix5/sifty" rel="noopener">Star on GitHub</a>
+    </div>
+  </section>
+
+  <section class="related">
+    <h2>Keep reading</h2>
+    <ul class="related-list">
+      <li><a href="what-to-delete-c-drive.html">What is safe to delete on your C: drive<span class="r-desc">The full tour of junk Windows accumulates.</span></a></li>
+      <li><a href="clean-winget-cache.html">Clean the winget cache<span class="r-desc">Clear the installer downloads winget leaves behind.</span></a></li>
+      <li><a href="../alternatives/ccleaner.html">Sifty vs CCleaner<span class="r-desc">An open-source cleaner, compared honestly.</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="" width="22" height="22">
+      <span>© 2026 Amine Zouaoui. MIT licensed.</span>
+    </div>
+    <nav class="footer-links" aria-label="Project links">
+      <a href="../">Home</a>
+      <a href="../guides/">Guides</a>
+      <a href="https://github.com/Vortrix5/sifty" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/sifty/" rel="noopener">PyPI</a>
+      <a href="https://github.com/Vortrix5/sifty/blob/main/SECURITY.md" rel="noopener">Security</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="../app.js"></script>
+</body>
+</html>

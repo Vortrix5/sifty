@@ -1,4 +1,4 @@
-"""Content views — one per sidebar section.
+"""Content views - one per sidebar section.
 
 The sidebar now lists seven top-level sections; the "free up space" and
 "installed software" screens (including Updates) are consolidated into the

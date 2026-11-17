@@ -5,13 +5,13 @@ Each tool has a name, Ollama-compatible JSON-schema descriptor, a risk tag
 
 Handlers return a :class:`ToolResult` (a concise ``summary`` for the model plus
 optional tabular data the UI renders as a real table) or a plain ``str``.  The
-summary is what gets fed back to the LLM — it is deliberately short so the model
+summary is what gets fed back to the LLM - it is deliberately short so the model
 adds *insight* instead of re-dumping the raw data (which the UI already shows).
 
 Risk levels:
-  - ``read``  — no side effects, always runs automatically.
-  - ``low``   — reversible / low-impact (e.g. toggle a startup entry).
-  - ``high``  — destructive or hard to reverse (delete files, uninstall, update).
+  - ``read``  - no side effects, always runs automatically.
+  - ``low``   - reversible / low-impact (e.g. toggle a startup entry).
+  - ``high``  - destructive or hard to reverse (delete files, uninstall, update).
 
 The autonomy level decides which tiers need a confirm (see :mod:`sifty.ai.agent`).
 """
@@ -69,7 +69,7 @@ def _handler_scan_junk(_args: dict) -> ToolResult:
     from ..core import junk
     cats = [c for c in junk.scan() if c.size > 0]
     if not cats:
-        return ToolResult(summary="No junk found — the machine is already tidy.")
+        return ToolResult(summary="No junk found - the machine is already tidy.")
     total = sum(c.size for c in cats)
     rows = [[c.category.key, c.category.label, human_size(c.size), f"{c.file_count:,}"]
             for c in cats]
@@ -135,12 +135,12 @@ def _handler_list_apps(_args: dict) -> ToolResult:
     apps = sorted(installed_apps(), key=lambda a: a.size_bytes, reverse=True)
     if not apps:
         return ToolResult(summary="No installed apps found.")
-    rows = [[a.name, a.version or "—", human_size(a.size_bytes) if a.size_bytes else "—"]
+    rows = [[a.name, a.version or "-", human_size(a.size_bytes) if a.size_bytes else "-"]
             for a in apps[:25]]
     biggest = ", ".join(f"{a.name} ({human_size(a.size_bytes)})" for a in apps[:3] if a.size_bytes)
     return ToolResult(
         summary=f"{len(apps)} apps installed. Largest: {biggest}. "
-                f"Full list shown to the user as a table — do not repeat it.",
+                f"Full list shown to the user as a table - do not repeat it.",
         title="Installed apps (largest first)", columns=["Name", "Version", "Size"], rows=rows,
     )
 
@@ -149,7 +149,7 @@ def _handler_list_updates(_args: dict) -> ToolResult:
     from ..core.updates import list_upgrades
     ups = list_upgrades()
     if not ups:
-        return ToolResult(summary="All apps are up to date — no updates pending.")
+        return ToolResult(summary="All apps are up to date - no updates pending.")
     rows = [[u.name, u.current, u.available] for u in ups]
     names = ", ".join(u.name for u in ups[:5])
     return ToolResult(
@@ -189,7 +189,7 @@ def _handler_toggle_startup(args: dict) -> ToolResult:
     if ok:
         return ToolResult(summary=f"Startup entry '{name}' {verb}.")
     return ToolResult(
-        summary=f"Could not {('enable' if enable else 'disable')} '{name}' — "
+        summary=f"Could not {('enable' if enable else 'disable')} '{name}' - "
                 f"it may not exist or is already in that state."
     )
 
@@ -236,7 +236,7 @@ def _handler_find_orphan_apps(_args: dict) -> ToolResult:
     from ..core.registry_scan import find_orphan_uninstall_entries
     entries = find_orphan_uninstall_entries()
     if not entries:
-        return ToolResult(summary="No orphaned uninstall entries found — the registry looks clean.")
+        return ToolResult(summary="No orphaned uninstall entries found - the registry looks clean.")
     rows = [[e.display_name, e.reason, e.hive] for e in entries]
     return ToolResult(
         summary=f"Found {len(entries)} orphaned uninstall entries with broken or missing uninstallers. "
@@ -278,7 +278,7 @@ def _handler_purge_artifacts(args: dict) -> ToolResult:
     artifacts = scan_artifacts(path)
     if not artifacts:
         return ToolResult(summary=f"No artifact directories found under {path}.")
-    result = purge_artifacts([a.path for a in artifacts], dry_run=False)
+    result = purge_artifacts(artifacts, dry_run=False)
     return ToolResult(
         summary=f"Purged {result.items} artifact directories ({human_size(result.bytes_freed)}) "
                 f"to the Recycle Bin under {path}."
@@ -310,7 +310,7 @@ def _handler_optimize_system(_args: dict) -> ToolResult:
 
 def _handler_system_status(_args: dict) -> ToolResult:
     from ..core.monitor import fmt_rate, snapshot
-    snap = snapshot()   # blocks ~1 s — cpu_percent(interval=1) inside
+    snap = snapshot()   # blocks ~1 s - cpu_percent(interval=1) inside
     rows = [
         [p.name, str(p.pid), f"{p.cpu_percent:.1f}%", f"{p.memory_mb:.0f} MB"]
         for p in snap.processes
@@ -480,7 +480,7 @@ TOOLS: list[Tool] = [
     ),
     Tool(
         name="prune_worktrees",
-        description="Find and remove orphaned git worktrees left by AI coding agents (Claude Code, Cursor, etc.) in a repository.",
+        description="Find and remove orphaned git worktrees in a repository (stale checkouts whose branch or directory is gone).",
         parameters={
             "type": "object",
             "properties": {

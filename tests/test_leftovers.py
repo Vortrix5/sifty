@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from sifty.core import leftovers, safety
 from sifty.core.leftovers import Leftover, clean_leftovers, find_leftovers
+
+_FAKE_CONFIG = SimpleNamespace(section=lambda name: {})
 
 
 def _mkdir(root: Path, *parts: str) -> Path:
@@ -90,3 +93,127 @@ def test_clean_leftovers_refuses_system_trees(tmp_path, monkeypatch):
 def test_normalize_handles_trademarks_and_separators():
     assert leftovers._normalize("Super-App™ v3.1 (x64)") == "super app"
     assert leftovers._normalize("EPSON_Scan 2") == "epson scan"
+
+
+# --- default root discovery ------------------------------------------------
+
+
+def test_default_roots_from_env(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    local.mkdir()
+    (local / "Programs").mkdir()
+    roaming = tmp_path / "roaming"
+    roaming.mkdir()
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.setenv("APPDATA", str(roaming))
+    monkeypatch.delenv("PROGRAMDATA", raising=False)  # unset var is skipped
+
+    roots = leftovers._default_roots()
+    assert local in roots
+    assert (local / "Programs") in roots
+    assert roaming in roots
+
+
+def test_shortcut_roots_from_env(monkeypatch, tmp_path):
+    roaming = tmp_path / "roaming"
+    menu = roaming / "Microsoft" / "Windows" / "Start Menu" / "Programs"
+    menu.mkdir(parents=True)
+    monkeypatch.setenv("APPDATA", str(roaming))
+    # PROGRAMDATA is set but lacks the Start Menu structure → not added.
+    progdata = tmp_path / "progdata"
+    progdata.mkdir()
+    monkeypatch.setenv("PROGRAMDATA", str(progdata))
+    assert leftovers._shortcut_roots() == [menu]
+
+
+def test_find_leftovers_uses_default_roots(monkeypatch, tmp_path):
+    local = tmp_path / "local"
+    _mkdir(local, "SuperApp")
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+    monkeypatch.delenv("APPDATA", raising=False)
+    monkeypatch.delenv("PROGRAMDATA", raising=False)
+    found = find_leftovers("Super App")  # roots/shortcut_roots default
+    assert any(f.path.name == "SuperApp" for f in found)
+
+
+# --- error / skip branches -------------------------------------------------
+
+
+class _BadRoot:
+    def iterdir(self):
+        raise OSError("permission denied")
+
+
+def test_find_leftovers_skips_unreadable_data_root():
+    assert find_leftovers("Super App", roots=[_BadRoot()], shortcut_roots=[]) == []
+
+
+def test_find_leftovers_skips_unreadable_shortcut_root():
+    assert find_leftovers("Super App", roots=[], shortcut_roots=[_BadRoot()]) == []
+
+
+def test_find_leftovers_publisher_subdir_unreadable():
+    class _Entry:
+        name = "AcmeSoft"
+
+        def is_dir(self):
+            return True
+
+        def iterdir(self):
+            raise OSError("denied")
+
+    class _Root:
+        def iterdir(self):
+            return iter([_Entry()])
+
+    found = find_leftovers("Super App", publisher="AcmeSoft", roots=[_Root()], shortcut_roots=[])
+    assert found == []
+
+
+def test_publisher_layout_ignores_nonmatching_subdirs(tmp_path):
+    _mkdir(tmp_path, "AcmeSoft", "SuperApp")
+    _mkdir(tmp_path, "AcmeSoft", "OtherTool")
+    found = find_leftovers("Super App", publisher="AcmeSoft", roots=[tmp_path], shortcut_roots=[])
+    assert [f.path.name for f in found] == ["SuperApp"]
+
+
+def test_shortcut_scan_ignores_nonmatching(tmp_path):
+    menu = tmp_path / "menu"
+    menu.mkdir()
+    (menu / "Super App.lnk").write_bytes(b"x")
+    (menu / "Unrelated.lnk").write_bytes(b"x")
+    found = find_leftovers("Super App", roots=[], shortcut_roots=[menu])
+    assert [f.path.name for f in found] == ["Super App.lnk"]
+
+
+def test_find_leftovers_dedupes_repeated_roots(tmp_path):
+    _mkdir(tmp_path, "SuperApp")
+    found = find_leftovers("Super App", roots=[tmp_path, tmp_path], shortcut_roots=[])
+    assert len([f for f in found if f.path.name == "SuperApp"]) == 1
+
+
+def test_dir_size_skips_unreadable_files(monkeypatch, tmp_path):
+    monkeypatch.setattr(leftovers.os, "walk", lambda p, onerror=None: [(str(tmp_path), [], ["ghost.bin"])])
+    assert leftovers._dir_size(tmp_path) == 0
+
+
+def test_file_size_missing_returns_zero(tmp_path):
+    assert leftovers._file_size(tmp_path / "ghost") == 0
+
+
+def test_clean_leftovers_skips_protected(monkeypatch, tmp_path):
+    from sifty.core.safety import ProtectedPathError
+
+    target = _mkdir(tmp_path, "SuperApp")
+    monkeypatch.setattr(leftovers, "trash", lambda *a, **k: (_ for _ in ()).throw(ProtectedPathError("refused")))
+    result = clean_leftovers([Leftover(target, 100, "data-dir")], dry_run=False, config=_FAKE_CONFIG)
+    assert result.items == 0
+    assert len(result.skipped) == 1
+
+
+def test_clean_leftovers_skips_os_error(monkeypatch, tmp_path):
+    target = _mkdir(tmp_path, "SuperApp")
+    monkeypatch.setattr(leftovers, "trash", lambda *a, **k: (_ for _ in ()).throw(OSError("file in use")))
+    result = clean_leftovers([Leftover(target, 100, "data-dir")], dry_run=False, config=_FAKE_CONFIG)
+    assert result.items == 0
+    assert "file in use" in result.skipped[0]

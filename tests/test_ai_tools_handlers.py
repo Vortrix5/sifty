@@ -126,28 +126,28 @@ def test_toggle_startup_failure(monkeypatch):
     assert "Could not enable" in res.summary
 
 
-# --- schedule_maintenance --------------------------------------------------
+# --- schedule_cleanup --------------------------------------------------
 
 
-def test_schedule_maintenance_no_profile():
-    res = tools.get("schedule_maintenance").handler({"name": "t", "frequency": "DAILY", "time": "03:00"})
+def test_schedule_cleanup_no_profile():
+    res = tools.get("schedule_cleanup").handler({"name": "t", "frequency": "DAILY", "time": "03:00"})
     assert "no profile" in res.summary
 
 
-def test_schedule_maintenance_weekly_success(monkeypatch):
+def test_schedule_cleanup_weekly_success(monkeypatch):
     monkeypatch.setattr(schedule, "sifty_command", lambda profile: f"sifty clean --profile {profile}")
     monkeypatch.setattr(schedule, "add", lambda *a, **k: (True, "created"))
-    res = tools.get("schedule_maintenance").handler(
+    res = tools.get("schedule_cleanup").handler(
         {"name": "wk", "profile": "deep", "frequency": "WEEKLY", "day": "SUN", "time": "02:00"}
     )
     assert "Scheduled 'wk'" in res.summary
     assert "Weekly SUN" in res.summary
 
 
-def test_schedule_maintenance_failure(monkeypatch):
+def test_schedule_cleanup_failure(monkeypatch):
     monkeypatch.setattr(schedule, "sifty_command", lambda profile: "cmd")
     monkeypatch.setattr(schedule, "add", lambda *a, **k: (False, "schtasks error"))
-    res = tools.get("schedule_maintenance").handler(
+    res = tools.get("schedule_cleanup").handler(
         {"name": "t", "profile": "p", "frequency": "DAILY", "time": "03:00"}
     )
     assert "Failed to create" in res.summary
@@ -300,3 +300,8 @@ def test_ollama_schemas_and_lookup():
     assert schemas and all(s["type"] == "function" for s in schemas)
     assert tools.get("scan_junk").to_ollama()["function"]["name"] == "scan_junk"
     assert tools.get("does-not-exist") is None
+
+
+def test_old_tool_name_resolves_to_new():
+    assert tools.get("schedule_maintenance") is tools.get("schedule_cleanup")
+    assert tools.get("schedule_cleanup").name == "schedule_cleanup"

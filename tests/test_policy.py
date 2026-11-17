@@ -56,3 +56,18 @@ def test_autonomy_and_policies_coexist(temp_appdata):
     # And setting autonomy again keeps the policy.
     set_autonomy("ask")
     assert policy.get_policy("clean_junk") == "never"
+
+
+def test_renamed_tool_keeps_old_policy(temp_appdata):
+    # A policy saved before schedule_maintenance became schedule_cleanup.
+    state = policy.load_state()
+    state["tool_policies"] = {"schedule_maintenance": "never"}
+    policy.save_state(state)
+    assert policy.get_policy("schedule_cleanup") == "never"
+
+    # Setting it under either name replaces the old key instead of duplicating it.
+    assert policy.set_policy("schedule_maintenance", "auto") is True
+    assert policy.load_state()["tool_policies"] == {"schedule_cleanup": "auto"}
+
+    policy.reset_policy("schedule_maintenance")
+    assert policy.all_policies() == {}

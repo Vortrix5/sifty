@@ -146,6 +146,7 @@ sifty apps list --by-size    # installed apps, largest first
 sifty apps orphans           # broken uninstall entries in the registry
 sifty apps uninstall "App"   # uninstall via winget (preview, then --apply)
 sifty apps leftovers "App"   # what the uninstaller left behind (then --apply)
+sifty apps orphaned-data     # AppData folders no installed app seems to own
 sifty update check           # available updates (winget)
 sifty update apply           # upgrade everything (asks first)
 

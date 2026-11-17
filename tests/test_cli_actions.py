@@ -149,7 +149,7 @@ def test_purge_clean_apply(monkeypatch, tmp_path):
     artifact = SimpleNamespace(path=tmp_path / "node_modules", pattern="node_modules", size_bytes=5000)
     monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: [artifact])
     monkeypatch.setattr(
-        "sifty.core.purge.purge_artifacts", lambda paths, dry_run=True: CleanResult(5000, 1, [], [])
+        "sifty.core.purge.purge_artifacts", lambda paths, dry_run=True, **kw: CleanResult(5000, 1, [], [])
     )
     result = runner.invoke(app, ["purge", "clean", str(tmp_path), "--apply", "--yes"])
     assert result.exit_code == 0

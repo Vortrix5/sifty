@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import typer
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn, TimeRemainingColumn
 from rich.table import Table
 
 from ...console import confirm, console, human_size, success, warn
@@ -108,7 +109,15 @@ def clean_cmd(
         warn("Cancelled.")
         return
 
-    result = purge.purge_artifacts(artifacts, dry_run=False)
+    with Progress(
+        TextColumn("Moving to the Recycle Bin"), BarColumn(), MofNCompleteColumn(),
+        TimeRemainingColumn(), console=console, transient=True,
+    ) as progress:
+        task = progress.add_task("purge", total=len(artifacts))
+        result = purge.purge_artifacts(
+            artifacts, dry_run=False,
+            on_progress=lambda done, _total: progress.update(task, completed=done),
+        )
     history.record_clean("purge", str(path), result.bytes_freed, result.items, result.trashed)
     success(f"Sent {result.items:,} directories ({human_size(result.bytes_freed)}) to the Recycle Bin.")
     if result.skipped:

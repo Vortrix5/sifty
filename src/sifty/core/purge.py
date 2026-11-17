@@ -9,7 +9,7 @@ treated as one unit (e.g. nested node_modules inside node_modules).
 from __future__ import annotations
 
 import os
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
@@ -144,11 +144,14 @@ def purge_artifacts(
     *,
     dry_run: bool = True,
     config=None,
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> CleanResult:
     """Send the given artifact directories to the Recycle Bin via the safety layer.
 
     Pass the ``ArtifactScan`` results from :func:`scan_artifacts` where you have
     them: their sizes are reused instead of walking every directory again.
+    ``on_progress(done, total)`` is called after each directory, since Windows
+    takes around a tenth of a second per item and big cleans take a while.
     """
     config = config or load_config()
     extra_protected = config.section("safety").get("extra_protected_paths", [])
@@ -158,7 +161,8 @@ def purge_artifacts(
     skipped: list[str] = []
     trashed: list[Path] = []
 
-    for item in paths:
+    total = len(paths)
+    for done, item in enumerate(paths, start=1):
         if isinstance(item, ArtifactScan):
             p, known_size = item.path, item.size_bytes
         else:
@@ -174,5 +178,7 @@ def purge_artifacts(
             skipped.append(str(exc))
         except OSError as exc:
             skipped.append(f"{p}: {exc}")
+        if on_progress is not None:
+            on_progress(done, total)
 
     return CleanResult(bytes_freed, items, skipped, trashed)

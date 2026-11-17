@@ -218,7 +218,12 @@ class PurgeView(BaseView):
 
     @work(thread=True, exclusive=True, group="purge-scan")
     def do_purge(self, paths: list[purge.ArtifactScan]) -> None:
-        result = purge.purge_artifacts(paths, dry_run=False)
+        result = purge.purge_artifacts(
+            paths, dry_run=False,
+            on_progress=lambda done, total: self.app.call_from_thread(
+                self._status, f"Purging… {done}/{total}"
+            ),
+        )
         history.record_clean("purge", str(self._path()), result.bytes_freed, result.items, result.trashed)
         self.app.call_from_thread(self._after_purge, result.bytes_freed, result.items, len(result.skipped))
 

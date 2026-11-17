@@ -361,7 +361,7 @@ async def test_purge_flow_nothing_then_confirmed(monkeypatch, tmp_path):
     art = _artifact(tmp_path)
     monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: [art])
     monkeypatch.setattr(
-        "sifty.core.purge.purge_artifacts", lambda paths, dry_run=True: CleanResult(5000, 1, [], [])
+        "sifty.core.purge.purge_artifacts", lambda paths, dry_run=True, **kw: CleanResult(5000, 1, [], [])
     )
     async with _make_app().run_test() as pilot:
         await pilot.app.show("purge")

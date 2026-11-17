@@ -272,6 +272,63 @@ async def test_purge_scan_worker_and_marks(monkeypatch, tmp_path):
         assert view._marked == set()
 
 
+async def test_purge_groups_artifacts_by_pattern(tmp_path):
+    artifacts = [
+        _artifact(tmp_path, "dist", 1000),
+        _artifact(tmp_path, "node_modules", 5000),
+        _artifact(tmp_path, "node_modules-2", 3000),
+    ]
+    artifacts[2].pattern = "node_modules"
+    async with _make_app().run_test(size=(160, 60)) as pilot:
+        await pilot.app.show("purge")
+        await pilot.pause()
+        await pilot.pause()
+        view = pilot.app.query_one(PurgeView)
+        view._populate(artifacts)
+        await pilot.pause()
+        table = pilot.app.query_one("#purge-table", DataTable)
+        assert table.row_count == 2
+        assert view._row_keys == ["group:node_modules", "group:dist"]
+        assert view._marked == {str(a.path) for a in artifacts}
+
+        view._toggle_mark("group:node_modules")
+        assert view._marked == {str(artifacts[0].path)}
+        view._toggle_mark("group:node_modules")
+        assert view._marked == {str(a.path) for a in artifacts}
+
+
+async def test_purge_group_expands_to_mark_single_directory(tmp_path):
+    artifacts = [
+        _artifact(tmp_path, "node_modules", 5000),
+        _artifact(tmp_path, "node_modules-2", 3000),
+    ]
+    artifacts[1].pattern = "node_modules"
+    async with _make_app().run_test(size=(160, 60)) as pilot:
+        await pilot.app.show("purge")
+        await pilot.pause()
+        await pilot.pause()
+        view = pilot.app.query_one(PurgeView)
+        view._populate(artifacts)
+        await pilot.pause()
+        table = pilot.app.query_one("#purge-table", DataTable)
+
+        view._toggle_expand("node_modules")
+        await pilot.pause()
+        assert table.row_count == 3
+        assert view._row_keys[1:] == [str(a.path) for a in artifacts]
+
+        # Unmark one directory: the group shows as partial, the other stays marked.
+        table.move_cursor(row=2)
+        view.action_toggle_mark()
+        assert view._marked == {str(artifacts[0].path)}
+        assert table.get_cell_at((0, 0)) == "~"
+
+        view._toggle_expand("node_modules")
+        await pilot.pause()
+        assert table.row_count == 1
+        assert view._marked == {str(artifacts[0].path)}
+
+
 async def test_purge_scan_empty(monkeypatch, tmp_path):
     monkeypatch.setattr("sifty.core.purge.scan_artifacts", lambda p: [])
     async with _make_app().run_test() as pilot:

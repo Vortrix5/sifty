@@ -22,6 +22,8 @@ logger = logging.getLogger("sifty.tui")
 
 _MARK = "✓"
 _UNMARK = " "
+_PARTIAL = "~"
+_GROUP_PREFIX = "group:"
 
 
 class PurgeView(BaseView):
@@ -31,7 +33,8 @@ class PurgeView(BaseView):
         yield Static("Dev artifact purge", classes="title")
         yield Static(
             "Scans a project tree for node_modules, dist, __pycache__, target, and "
-            "other build artefacts. Mark rows (click / Space) and purge selected.",
+            "other build artefacts. Results are grouped by type: Space marks a row, "
+            "Enter or click opens a group to mark single directories.",
             classes="subtle",
         )
         yield Input(value=str(Path.home()), id="purge-path", placeholder="Project root to scan")
@@ -50,7 +53,10 @@ class PurgeView(BaseView):
         self._marked: set[str] = set()
         table = self.query_one("#purge-table", DataTable)
         table.cursor_type = "row"
-        self._cols = table.add_columns("", "Pattern", "Size", "Path")
+        table.add_columns("", "Pattern / path", "Directories", "Size")
+        self._groups: dict[str, list[purge.ArtifactScan]] = {}
+        self._expanded: set[str] = set()
+        self._row_keys: list[str] = []
         self.query_one("#purge-panel").display = False
         self.query_one("#purge-actions").display = False
 
@@ -109,6 +115,9 @@ class PurgeView(BaseView):
     def _populate(self, artifacts: list[purge.ArtifactScan]) -> None:
         self._artifacts = artifacts
         self._marked = {str(a.path) for a in artifacts}  # pre-mark all
+        self._groups = {}
+        for artifact in artifacts:
+            self._groups.setdefault(artifact.pattern, []).append(artifact)
         self.query_one("#purge-table", DataTable).loading = False
         if not artifacts:
             self.query_one("#purge-panel").display = False
@@ -121,34 +130,73 @@ class PurgeView(BaseView):
 
     def _rebuild_table(self) -> None:
         table = self.query_one("#purge-table", DataTable)
+        cursor = table.cursor_row
         table.clear()
-        for a in self._artifacts:
-            mark = _MARK if str(a.path) in self._marked else _UNMARK
-            table.add_row(mark, a.pattern, human_size(a.size_bytes), str(a.path), key=str(a.path))
+        self._row_keys = []
+        groups = sorted(
+            self._groups.items(),
+            key=lambda item: sum(a.size_bytes for a in item[1]),
+            reverse=True,
+        )
+        for pattern, artifacts in groups:
+            paths = {str(a.path) for a in artifacts}
+            selected = len(paths & self._marked)
+            mark = _MARK if selected == len(paths) else _PARTIAL if selected else _UNMARK
+            arrow = "▾" if pattern in self._expanded else "▸"
+            key = _GROUP_PREFIX + pattern
+            table.add_row(
+                mark, f"{arrow} {pattern}", f"{len(artifacts):,}",
+                human_size(sum(a.size_bytes for a in artifacts)), key=key,
+            )
+            self._row_keys.append(key)
+            if pattern in self._expanded:
+                for a in artifacts:
+                    path = str(a.path)
+                    table.add_row(
+                        _MARK if path in self._marked else _UNMARK,
+                        f"    {path}", "", human_size(a.size_bytes), key=path,
+                    )
+                    self._row_keys.append(path)
+        if cursor is not None and self._row_keys:
+            table.move_cursor(row=min(cursor, len(self._row_keys) - 1))
         total = sum(a.size_bytes for a in self._artifacts if str(a.path) in self._marked)
         self._status(
-            f"{len(self._artifacts)} directories · {len(self._marked)} marked "
-            f"({human_size(total)})"
+            f"{len(self._artifacts)} directories in {len(self._groups)} groups · "
+            f"{len(self._marked)} marked ({human_size(total)})"
         )
 
     def _toggle_mark(self, key: str) -> None:
-        if key in self._marked:
+        """Toggle a whole group (``group:<pattern>``) or a single directory path."""
+        group = self._groups.get(key.removeprefix(_GROUP_PREFIX)) if key.startswith(_GROUP_PREFIX) else None
+        if group is not None:
+            paths = {str(a.path) for a in group}
+            if paths <= self._marked:
+                self._marked -= paths
+            else:
+                self._marked |= paths
+        elif key in self._marked:
             self._marked.discard(key)
-            self.query_one("#purge-table", DataTable).update_cell(key, self._cols[0], _UNMARK)
         else:
             self._marked.add(key)
-            self.query_one("#purge-table", DataTable).update_cell(key, self._cols[0], _MARK)
-        total = sum(a.size_bytes for a in self._artifacts if str(a.path) in self._marked)
-        self._status(f"{len(self._artifacts)} directories · {len(self._marked)} marked ({human_size(total)})")
+        self._rebuild_table()
+
+    def _toggle_expand(self, pattern: str) -> None:
+        self._expanded ^= {pattern}
+        self._rebuild_table()
 
     def action_toggle_mark(self) -> None:
         table = self.query_one("#purge-table", DataTable)
-        if table.row_count and table.cursor_row is not None and 0 <= table.cursor_row < len(self._artifacts):
-            self._toggle_mark(str(self._artifacts[table.cursor_row].path))
+        if table.row_count and table.cursor_row is not None and 0 <= table.cursor_row < len(self._row_keys):
+            self._toggle_mark(self._row_keys[table.cursor_row])
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        if event.row_key and event.row_key.value:
-            self._toggle_mark(event.row_key.value)
+        key = event.row_key.value if event.row_key else None
+        if not key:
+            return
+        if key.startswith(_GROUP_PREFIX):
+            self._toggle_expand(key.removeprefix(_GROUP_PREFIX))
+        else:
+            self._toggle_mark(key)
 
     @work
     async def _purge_flow(self) -> None:

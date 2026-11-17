@@ -103,6 +103,22 @@ def test_dir_size_missing_path_is_zero(tmp_path):
     assert purge._dir_size(tmp_path / "nope") == 0
 
 
+def test_scan_skips_virtualenvs_and_site_packages(tmp_path):
+    # Real packages named like artifacts (coverage, build) must never be offered.
+    _make_tree(tmp_path, {
+        "proj": {
+            "dist": {"app.js": 100},
+            ".venv": {
+                "pyvenv.cfg": 10,
+                "Lib": {"site-packages": {"coverage": {"__init__.py": 50}}},
+            },
+            "Lib": {"site-packages": {"build": {"__init__.py": 50}}},
+        }
+    })
+    results = purge.scan_artifacts(tmp_path)
+    assert [a.pattern for a in results] == ["dist"]
+
+
 def test_scan_sizes_match_contents(tmp_path):
     _make_tree(tmp_path, {
         "a": {"node_modules": {"x.js": 700}},

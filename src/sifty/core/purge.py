@@ -51,6 +51,10 @@ class ArtifactScan:
     pattern: str   # which ARTIFACT_DIRS key matched
 
 
+# Never descend into these: they hold installed packages, not build output, and
+# names like ``coverage`` or ``build`` there are real modules.
+_SKIP_DIRS: frozenset[str] = frozenset({"site-packages", "dist-packages"})
+
 _SIZE_WORKERS = min(8, os.cpu_count() or 4)
 
 
@@ -88,6 +92,10 @@ def _dir_size(path: Path) -> int:
     return total
 
 
+def _is_virtualenv(path: Path) -> bool:
+    return (path / "pyvenv.cfg").is_file()
+
+
 def scan_artifacts(
     root: Path,
     patterns: frozenset[str] | None = None,
@@ -110,6 +118,8 @@ def scan_artifacts(
             keep: list[str] = []
             for name in dirnames:
                 candidate = current / name
+                if name in _SKIP_DIRS or _is_virtualenv(candidate):
+                    continue
                 if name in active:
                     if not is_protected(candidate):
                         candidates.append((candidate, name))

@@ -179,6 +179,8 @@ sifty config edit            # open config.toml in your editor
 # AI (requires Ollama running)
 sifty ai status
 sifty ai ask "what can I safely delete on my C drive?" --path C:\
+sifty do "free up some space on C:"    # the agent does it, asking before each change
+sifty do --read-only "why is my disk so full?"   # look around, change nothing
 sifty ai autonomy low_risk_auto        # how much the agent does before asking
 sifty ai policy set clean_junk auto    # per-tool: auto / ask / never
 sifty ai policy list                   # see every tool and what it will do

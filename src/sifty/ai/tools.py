@@ -290,7 +290,10 @@ def _handler_optimize_system(_args: dict) -> ToolResult:
     from ..core.optimize import list_operations, run_op
     from ..windows.admin import is_admin
     admin = is_admin()
-    ops = [op for op in list_operations() if not op.requires_admin or admin]
+    ops = [
+        op for op in list_operations()
+        if op.key != "compact-vhd" and (not op.requires_admin or admin)
+    ]
     if not ops:
         return ToolResult(summary="No operations available without administrator rights.")
     results = []
@@ -333,6 +336,145 @@ def _handler_system_status(_args: dict) -> ToolResult:
         columns=["Process", "PID", "CPU %", "Memory"],
         rows=rows,
     )
+
+
+# Stale-download cleanup never goes below this, so "days=0" can't empty Downloads.
+_MIN_STALE_DAYS = 30
+
+
+def _stale_days(args: dict) -> int:
+    try:
+        days = int(args.get("days") or 180)
+    except (TypeError, ValueError):
+        days = 180
+    return max(days, _MIN_STALE_DAYS)
+
+
+def _handler_find_stale_downloads(args: dict) -> ToolResult:
+    from ..core.cleanup import find_stale_downloads
+    days = _stale_days(args)
+    items = find_stale_downloads(days)
+    if not items:
+        return ToolResult(summary=f"Nothing in Downloads is older than {days} days.")
+    total = sum(size for _p, size, _m in items)
+    rows = [[p.name, human_size(size)] for p, size, _m in items[:50]]
+    return ToolResult(
+        summary=f"{len(items)} item(s) in Downloads untouched for {days}+ days, "
+                f"{human_size(total)} in total. Shown to the user as a table. "
+                f"clean_stale_downloads with the same days value would move them to the Recycle Bin.",
+        title=f"Downloads older than {days} days", columns=["Item", "Size"], rows=rows,
+    )
+
+
+def _handler_clean_stale_downloads(args: dict) -> ToolResult:
+    from ..core import history
+    from ..core.cleanup import find_stale_downloads, trash_paths
+    days = _stale_days(args)
+    items = find_stale_downloads(days)
+    if not items:
+        return ToolResult(summary=f"Nothing in Downloads is older than {days} days.")
+    result = trash_paths([p for p, _s, _m in items], dry_run=False)
+    history.record_clean("cleanup-stale", f"Downloads >{days}d", result.bytes_freed,
+                         result.items, result.trashed)
+    return ToolResult(
+        summary=f"Moved {result.items} old download(s) ({human_size(result.bytes_freed)}) "
+                f"to the Recycle Bin. The user can undo this from the Reports screen."
+                + (f" {len(result.skipped)} skipped." if result.skipped else "")
+    )
+
+
+def _handler_find_large_files(args: dict) -> ToolResult:
+    from ..core.cleanup import find_large_files
+    path = Path(args.get("path", "")).expanduser()
+    if not path.exists():
+        return ToolResult(summary=f"Path does not exist: {path}")
+    try:
+        min_mb = max(int(args.get("min_mb") or 100), 1)
+    except (TypeError, ValueError):
+        min_mb = 100
+    items = find_large_files(path, min_mb * 1024 * 1024, top=30)
+    if not items:
+        return ToolResult(summary=f"No files of {min_mb} MB or more under {path} "
+                                  f"(files changed in the last week are left out).")
+    rows = [[human_size(size), str(fp)] for fp, size in items]
+    return ToolResult(
+        summary=f"{len(items)} file(s) of {min_mb} MB+ under {path}, "
+                f"{human_size(sum(s for _f, s in items))} in total. Shown to the user as a table. "
+                f"Only suggest removing ones that are clearly disposable (installers, old "
+                f"archives, disk images); pass their exact paths to clean_large_files.",
+        title=f"Large files under {path}", columns=["Size", "Path"], rows=rows,
+    )
+
+
+def _handler_clean_large_files(args: dict) -> ToolResult:
+    from ..core import history
+    from ..core.cleanup import trash_paths
+    raw = args.get("paths") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    files = [Path(str(p)).expanduser() for p in raw]
+    # Files only: a folder here would be a much bigger blast radius than asked for.
+    not_files = [f for f in files if not f.is_file()]
+    files = [f for f in files if f.is_file()]
+    if not files:
+        return ToolResult(summary="Nothing removed: none of the given paths is an existing file.")
+    result = trash_paths(files, dry_run=False)
+    history.record_clean("cleanup-large", f"{len(files)} large file(s)", result.bytes_freed,
+                         result.items, result.trashed)
+    skipped = len(result.skipped) + len(not_files)
+    return ToolResult(
+        summary=f"Moved {result.items} file(s) ({human_size(result.bytes_freed)}) to the "
+                f"Recycle Bin. The user can undo this from the Reports screen."
+                + (f" {skipped} skipped (missing, not a file, or protected)." if skipped else "")
+    )
+
+
+def _handler_list_services(_args: dict) -> ToolResult:
+    from ..core.services import list_services
+    rows = [[s.name, s.label, s.start_type] for s in list_services() if s.present]
+    if not rows:
+        return ToolResult(summary="None of the optional services Sifty manages are installed.")
+    return ToolResult(
+        summary=f"{len(rows)} optional service(s) Sifty can change, with their start types. "
+                f"Shown to the user as a table. Only these can be changed with manage_service.",
+        title="Optional services", columns=["Service", "Description", "Start type"], rows=rows,
+    )
+
+
+def _handler_manage_service(args: dict) -> ToolResult:
+    from ..core import services
+    from ..windows.admin import is_admin
+    name = str(args.get("name", ""))
+    mode = str(args.get("mode", "")).lower()
+    if not services.can_manage(name):
+        return ToolResult(summary=f"'{name}' is not on Sifty's list of optional services, "
+                                  f"so it can't be changed from here. See list_services.")
+    if not services.is_present(name):
+        return ToolResult(summary=f"The service '{name}' isn't installed on this machine.")
+    if not is_admin():
+        return ToolResult(summary="Changing a service needs administrator rights. Ask the user "
+                                  "to restart Sifty as admin (sifty --admin, or F2 in the TUI).")
+    if services.set_start_type(name, mode):
+        return ToolResult(summary=f"Set '{name}' to {mode}. This can be changed back at any time.")
+    return ToolResult(summary=f"Could not set '{name}' to '{mode}' (valid modes: auto, manual, disabled).")
+
+
+def _handler_compact_virtual_disks(_args: dict) -> ToolResult:
+    from ..core.optimize import list_operations, run_op
+    from ..windows.admin import is_admin
+    from ..windows.hyperv import list_vhdx_files
+    vhds = list_vhdx_files()
+    if not vhds:
+        return ToolResult(summary="No Hyper-V or WSL2 virtual disks (.vhdx) found.")
+    if not is_admin():
+        total = sum(size for _p, size in vhds)
+        return ToolResult(summary=f"Found {len(vhds)} virtual disk(s) ({human_size(total)}), "
+                                  f"but compacting needs administrator rights. Ask the user to "
+                                  f"restart Sifty as admin and shut down WSL first (wsl --shutdown).")
+    op = next(o for o in list_operations() if o.key == "compact-vhd")
+    ok, msg = run_op(op, dry_run=False)
+    return ToolResult(summary=f"Compacting virtual disks {'finished' if ok else 'failed'}: {msg}. "
+                              f"Disks in use (a running WSL distro or VM) can't be compacted.")
 
 
 def _handler_apply_updates(args: dict) -> ToolResult:
@@ -530,6 +672,91 @@ TOOLS: list[Tool] = [
         parameters={"type": "object", "properties": {}, "required": []},
         risk="low",
         handler=_handler_optimize_system,
+    ),
+    Tool(
+        name="find_stale_downloads",
+        description="List items in the Downloads folder that haven't been touched in a number of days.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "days": {"type": "integer", "description": "Age threshold in days (minimum 30, default 180)"}
+            },
+            "required": [],
+        },
+        risk="read",
+        handler=_handler_find_stale_downloads,
+    ),
+    Tool(
+        name="clean_stale_downloads",
+        description="Move items in Downloads older than a number of days to the Recycle Bin. Call find_stale_downloads first so the user sees what goes.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "days": {"type": "integer", "description": "Age threshold in days (minimum 30, default 180)"}
+            },
+            "required": [],
+        },
+        risk="high",
+        handler=_handler_clean_stale_downloads,
+    ),
+    Tool(
+        name="find_large_files",
+        description="List the largest files under a directory (files changed in the last week are left out).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Directory to search, e.g. C:\\Users\\User"},
+                "min_mb": {"type": "integer", "description": "Minimum file size in MB (default 100)"},
+            },
+            "required": ["path"],
+        },
+        risk="read",
+        handler=_handler_find_large_files,
+    ),
+    Tool(
+        name="clean_large_files",
+        description="Move specific files to the Recycle Bin by exact path. Only files, never folders. Use paths from find_large_files.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "paths": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Exact file paths to remove",
+                }
+            },
+            "required": ["paths"],
+        },
+        risk="high",
+        handler=_handler_clean_large_files,
+    ),
+    Tool(
+        name="list_services",
+        description="List the optional Windows services Sifty can change (telemetry, Xbox, Fax, SysMain, etc.) and their start types.",
+        parameters={"type": "object", "properties": {}, "required": []},
+        risk="read",
+        handler=_handler_list_services,
+    ),
+    Tool(
+        name="manage_service",
+        description="Change the start type of one optional Windows service from list_services. Reversible. Needs administrator rights.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "Service name from list_services, e.g. 'DiagTrack'"},
+                "mode": {"type": "string", "enum": ["auto", "manual", "disabled"], "description": "New start type"},
+            },
+            "required": ["name", "mode"],
+        },
+        risk="high",
+        handler=_handler_manage_service,
+    ),
+    Tool(
+        name="compact_virtual_disks",
+        description="Reclaim unused space inside WSL2 / Hyper-V .vhdx virtual disks without touching their contents. Needs administrator rights and WSL shut down.",
+        parameters={"type": "object", "properties": {}, "required": []},
+        risk="high",
+        handler=_handler_compact_virtual_disks,
     ),
 ]
 
